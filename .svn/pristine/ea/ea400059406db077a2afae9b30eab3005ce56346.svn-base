@@ -1,0 +1,386 @@
+package cn.ritac.mmbs.web.controller.api;
+
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import javax.print.attribute.standard.DateTimeAtCompleted;
+import javax.validation.Valid;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.github.pagehelper.PageInfo;
+import com.yunpian.sdk.model.Result;
+import com.yunpian.sdk.model.SmsSingleSend;
+import cn.ritac.mmbs.comm.MessageGenerate;
+import cn.ritac.mmbs.comm.MessageTemplateTypeEnum;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.UserDevicesBind;
+import cn.ritac.mmbs.mybatis.model.UserRolesBind;
+import cn.ritac.mmbs.mybatis.model.Users;
+import cn.ritac.mmbs.mybatis.model.VDeviceUserBind;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.service.RolesService;
+import cn.ritac.mmbs.service.UserDeviceBindService;
+import cn.ritac.mmbs.service.UsersService;
+import cn.ritac.mmbs.web.dto.LoginDto;
+import cn.ritac.mmbs.web.dto.UserDto;
+import cn.ritac.mmbs.web.dto.UserRoleDto;
+
+/**
+ * 用户操作
+ * 
+ * @author chenfang
+ *
+ */
+@Controller
+@RequestMapping(value = "/users")
+@ResponseBody
+public class UserController extends BaseController {
+
+	@Value("${site.user.telPattern}")
+	private String telPattern; // 注入普通字符串
+	@Autowired
+	private UsersService usersService;
+	@Autowired
+	private RolesService rolesService;
+
+	@Autowired
+	private UserDeviceBindService userDeviceBindService;
+
+	@Autowired
+	private DevicesService devicesService;
+
+	/**
+	 * 用户登录
+	 * 
+	 * @param userAccount
+	 * @param pwd
+	 * @return
+	 */
+
+	@RequestMapping("/login")
+	public String login(@Valid LoginDto login, BindingResult result) {
+		String returnMsg = returnLogic.defalutValidate(result);
+		if (!result.hasErrors()) {
+			Users users = new Users();
+			users.setUserAccount(login.getLoginName());
+			users.setPwd(login.getPwd());
+			Users userResult = usersService.find(users);
+			if (userResult == null || userResult.getId() == 0) {
+				return returnLogic.resultError("用户名密码不正确");
+			}
+			return returnLogic.resultSuccess(userResult);
+		}
+		return returnMsg;
+	}
+
+	/**
+	 * 用户绑定设备
+	 * 
+	 * @return
+	 */
+	@RequestMapping("/userBindDevices")
+	public String userBindDevices(int userId, String key, int deviceId) {
+
+		Users userInfo = usersService.findById(userId);
+
+		Devices deviceInfo = devicesService.findById(deviceId);
+		
+		
+		if(userInfo==null||userInfo.getId()==0)
+		{
+			return returnLogic.resultError("该用户不存在无法添加");
+		}
+		if(deviceInfo==null||deviceInfo.getId()==0)
+		{
+			return returnLogic.resultError("该设备不存在无法添加");
+		}
+		if(key==null||key.trim()=="")
+		{
+			return returnLogic.resultError("设备Key没有填写无法添加");
+		}
+		if(!deviceInfo.getDeviceKey().equals(key.trim()))
+		{
+			return returnLogic.resultError("该设备Key不正确无法添加");
+		}
+
+		UserDevicesBind userDevicesBindSearch=new UserDevicesBind();
+		
+		userDevicesBindSearch.setUserId(userId);
+		userDevicesBindSearch.setDeviceId(deviceId);
+		
+		UserDevicesBind	userDevicesBindSearchInfo=	userDeviceBindService.find(userDevicesBindSearch);
+		
+
+		if(userDevicesBindSearchInfo!=null)
+		{
+			return returnLogic.resultError("该用户已经绑定该设备，无法继续绑定");
+		}
+		
+		UserDevicesBind userDevicesBind = new UserDevicesBind();
+		
+		userDevicesBind.setUserId(userId);
+		userDevicesBind.setDeviceId(deviceId);
+		userDevicesBind.setCreateTime(new Date());
+		
+		userDeviceBindService.save(userDevicesBind);
+
+		return returnLogic.resultSuccess("绑定设备成功");
+	}
+
+	/**
+	 * 移除设备绑定
+	 * 
+	 * @param deviceId
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping("/userDevicesClear")
+	public String userDevicesClear(int deviceId, int userId) {
+		UserDevicesBind userDevicesBindSearch=new UserDevicesBind();
+		
+		userDevicesBindSearch.setUserId(userId);
+		userDevicesBindSearch.setDeviceId(deviceId);
+		UserDevicesBind	userDevicesBindSearchInfo=	userDeviceBindService.find(userDevicesBindSearch);
+		
+		if(userDevicesBindSearchInfo==null)
+		{
+			return returnLogic.resultError("该用户未绑定该设备，移除设备失败");
+		}
+		userDeviceBindService.delete(new Integer[] {userDevicesBindSearchInfo.getId()});
+			
+		
+		return returnLogic.resultSuccess("移除设备成功!");
+	}
+	/**
+	 * 得到设备绑定列表
+	 * @param userId
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getDeviceUserBind")
+	public String getDeviceUserBind(int userId,int pageIndex,int pageSize) 
+	{
+		PageInfo<VDeviceUserBind> list=userDeviceBindService.getDeviceUserBind(userId, pageIndex, pageSize);
+		return returnLogic.resultSuccess(list); 
+	}
+	/**
+	 * 得到单个用户
+	 * 
+	 * @param id
+	 * @param telephone
+	 * @return
+	 */
+	@RequestMapping("/getuser")
+	public String getUser(int id, String telephone) {
+		Users userInfo = new Users();
+		if (id != 0) {
+			userInfo.setId(id);
+		}
+		if (telephone != null && telephone != "") {
+			userInfo.setTelephone(telephone);
+		}
+		if (id == 0 && (telephone == null || telephone == "")) {
+			return returnLogic.resultError("用户ID和手机号必须填写一个");
+		}
+		Users userResult = usersService.find(userInfo);
+
+		if (userResult == null) {
+			return returnLogic.resultError("没有查询到该用户");
+		}
+		return returnLogic.resultSuccess(userResult);
+	}
+
+	/**
+	 * 重置密码
+	 * 
+	 * @param telephone
+	 * @return
+	 */
+
+	@RequestMapping("/forgetPwd")
+	public String forgetPwd(String telephone) {
+
+		boolean telPass = Pattern.matches(telPattern, telephone);
+		if (!telPass) {
+			return returnLogic.resultError("手机号码不正确");
+		}
+		String code = MessageGenerate.CreateRandom();
+
+		Result<SmsSingleSend> result = MessageGenerate.SendMsg(telephone, code, MessageTemplateTypeEnum.ResetTemplate);
+
+		if (result.isSucc()) {
+			Users userSearch = new Users();
+			userSearch.setTelephone(telephone);
+
+			Users userInfo = usersService.find(userSearch);
+
+			if (userInfo != null) {
+				userInfo.setPwd(code);
+
+				usersService.update(userInfo);
+
+				return returnLogic.resultSuccess("密码重置为:" + code);
+			}
+			return returnLogic.resultError("该手机号未绑定用户");
+		}
+		return returnLogic.resultError("短信发送失败!");
+	}
+
+	/**
+	 * 保存修改用户
+	 * 
+	 * @param user
+	 * @param result
+	 * @return
+	 */
+
+	@RequestMapping("/saveUser")
+	public String saveUser(@Valid UserDto user, BindingResult result) {
+		String returnMsg = returnLogic.defalutValidate(result);
+		if (!result.hasErrors()) {
+
+			ModelMapper modelMapper = new ModelMapper();
+			Users pojo = modelMapper.map(user, Users.class);
+			Users userSearch = new Users();
+
+			userSearch.setTelephone(user.getTelephone());
+
+			Users userExit = usersService.find(userSearch);
+
+			if (user.getId() != 0) {
+				Users userInfo = usersService.findById(user.getId());
+				if (userInfo != null) {
+
+					if (userExit != null && userExit.getId() != user.getId()) {
+						return returnLogic.resultError("该手机号已经绑定其他账号!");
+					}
+					userInfo.setTelephone(user.getTelephone());
+					userInfo.setPwd(user.getPwd());
+					usersService.update(userInfo);
+					return returnLogic.resultSuccess();
+				}
+				return returnLogic.resultError("该用户不存在!");
+
+			} else {
+
+				if (userExit != null) {
+					return returnLogic.resultError("该手机号已经绑定其他账号!");
+				}
+				pojo.setUserAccount(user.getTelephone());
+				pojo.setCreateTime(new Date());
+				usersService.save(pojo);
+				return returnLogic.resultSuccess();
+			}
+		}
+		return returnMsg;
+	}
+
+	/**
+	 * 删除用户
+	 * 
+	 * @param id
+	 * @return
+	 */
+
+	@RequestMapping("/deleteUser")
+	public String deleteUser(int id) {
+
+		Users userInfo = usersService.findById(id);
+		if (userInfo != null) {
+			usersService.delete(new Integer[] { id });
+
+			return returnLogic.resultSuccess();
+		}
+		return returnLogic.resultError("不存在该Id下的用户");
+
+	}
+
+	/**
+	 * 得到用户列表
+	 * 
+	 * @param telephone
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getUsers")
+	public String getUsers(String telephone, int pageIndex, int pageSize) {
+
+		PageInfo<Users> userList = usersService.getUsers(telephone, pageSize, pageIndex);
+		return returnLogic.resultSuccess(userList);
+
+	}
+
+	/**
+	 * 得到用户权限
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping("/getRoleByUserId")
+	public String getRoleByUserId(int userId) {
+
+		UserRolesBind userRolesBindSearch = new UserRolesBind();
+
+		userRolesBindSearch.setUserId(userId);
+
+		UserRolesBind returnUserRolesBind = rolesService.find(userRolesBindSearch);
+
+		return returnLogic.resultSuccess(returnUserRolesBind);
+
+	}
+
+	/***
+	 * 保存用户权限
+	 * 
+	 * @return
+	 */
+	@RequestMapping("/saveUserRole")
+	public String saveUserRole(@Valid UserRoleDto userRole, BindingResult result) {
+
+		String returnMsg = returnLogic.defalutValidate(result);
+		if (!result.hasErrors()) {
+			ModelMapper modelMapper = new ModelMapper();
+			UserRolesBind pojo = modelMapper.map(userRole, UserRolesBind.class);
+
+			Users userInfo = usersService.findById(userRole.getUserId());
+			UserRolesBind userRolesBindSearch = new UserRolesBind();
+			if (userInfo == null) {
+				return returnLogic.resultError("该用户不存在,无法绑定权限");
+			}
+
+			if (userRole.getId() == 0) {
+
+				userRolesBindSearch.setUserId(userRole.getUserId());
+				UserRolesBind userRoleInfo = rolesService.find(userRolesBindSearch);
+
+				if (userRoleInfo != null && userRoleInfo.getUserId() == userRole.getUserId()) {
+					return returnLogic.resultError("该用户已经绑定过无法再次绑定");
+				}
+				pojo.setCreateTime(new Date());
+				rolesService.save(pojo);
+				return returnLogic.resultSuccess();
+			} else {
+				userRolesBindSearch = rolesService.findById(userRole.getId());
+
+				if (userRolesBindSearch == null) {
+					return returnLogic.resultError("该权限不存在无法保存");
+				}
+				pojo.setUserId(userRolesBindSearch.getUserId());
+				pojo.setCreateTime(new Date());
+				rolesService.update(pojo);
+				return returnLogic.resultSuccess();
+			}
+		}
+		return returnMsg;
+	}
+
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.DevicesDo">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="door" jdbcType="BIT" property="door" />
+    <result column="light" jdbcType="BIT" property="light" />
+    <result column="beep" jdbcType="BIT" property="beep" />
+    <result column="fan" jdbcType="BIT" property="fan" />
+    <result column="heating" jdbcType="BIT" property="heating" />
+    <result column="bak_switch" jdbcType="BIT" property="bakSwitch" />
+    <result column="camera_pwr" jdbcType="BIT" property="cameraPwr" />
+    <result column="fill_light_pwr" jdbcType="BIT" property="fillLightPwr" />
+    <result column="onu_pwr" jdbcType="BIT" property="onuPwr" />
+    <result column="router_pwr" jdbcType="BIT" property="routerPwr" />
+    <result column="update_time" jdbcType="BIT" property="updateTime" />
+  </resultMap>
+  
+  <select id="queryDeviceDoByDeviceId" resultMap="BaseResultMap">
+  		select * from mmbs_devices_do where device_id=#{deviceId};
+  	</select>
+</mapper>

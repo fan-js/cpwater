@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.GroupMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.Group">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="update_time" jdbcType="TIMESTAMP"
+			property="updateTime" />
+		<result column="group_name" jdbcType="VARCHAR"
+			property="groupName" />
+		<result column="node_key" jdbcType="VARCHAR" property="key" />
+		<result column="self" jdbcType="INTEGER" property="self" />
+		<result column="depth" jdbcType="INTEGER" property="depth" />
+		<result column="group_describe" jdbcType="VARCHAR"
+			property="describe" />
+	</resultMap>
+
+	<select id="getNodeByDepthSelf" resultType="java.lang.Integer">
+		SELECT IFNULL(max(self),-1) maxself FROM mmbs_group WHERE 1=1
+		<if test="nodeDepth > 0">
+			AND depth = #{nodeDepth}
+		</if>
+
+		<if test="node_key !=null and node_key !=''">
+			AND node_key like CONCAT(#{node_key},'%')
+		</if>
+	</select>
+
+	<select id="findGroupByRoleId" resultMap="BaseResultMap">
+		SELECT
+		gp.*
+		FROM mmbs_group gp
+		INNER JOIN
+		mmbs_role_group rgp on rgp.group_id = gp.id
+		WHERE rgp.role_id =
+		#{roleId}
+	</select>
+	<select id="groupProporList" resultType="cn.ritac.mmbs.web.dto.convert.GroupVO">
+		   SELECT
+				g.group_name
+				,COUNT(1) num 
+				,k.offlineNum
+				,k.onlineNum
+				,k.faultNum
+				,TRUNCATE(ROUND(k.onlineNum /COUNT(1),3)*100,2) per 
+			FROM mmbs_group g
+			INNER JOIN mmbs_group_device gd ON g.id = gd.group_id
+			INNER JOIN (
+				 SELECT
+				 	gd.group_id,
+				  SUM(CASE d.online  WHEN 0 THEN 1 else 0 end) offlineNum,
+				  SUM(CASE d.online  WHEN 1 THEN 1 else 0 end) onlineNum,
+				  SUM(CASE d.isFault WHEN 1 THEN 1 else 0 end) faultNum
+				 FROM mmbs_devices d
+				  INNER JOIN mmbs_group_device gd on gd.device_id = d.id
+				   GROUP BY gd.group_id
+				)k  ON k.group_id = g.id
+			GROUP BY gd.group_id
+	</select>
+</mapper>

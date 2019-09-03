@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesRegRecMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.DevicesRegRec">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="fan_open_temper" jdbcType="INTEGER" property="fanOpenTemper" />
+    <result column="heater_open_temper" jdbcType="INTEGER" property="heaterOpenTemper" />
+    <result column="vol_alarm_limit" jdbcType="INTEGER" property="volAlarmLimit" />
+    <result column="curr_alarm_limit" jdbcType="INTEGER" property="currAlarmLimit" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  
+    <resultMap id="VDevicesRegRecListResultMap" type="cn.ritac.mmbs.mybatis.model.VDevicesRegRecList">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="fan_open_temper" jdbcType="INTEGER" property="fanOpenTemper" />
+    <result column="heater_open_temper" jdbcType="INTEGER" property="heaterOpenTemper" />
+    <result column="vol_alarm_limit" jdbcType="INTEGER" property="volAlarmLimit" />
+    <result column="curr_alarm_limit" jdbcType="INTEGER" property="currAlarmLimit" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="device_num" jdbcType="VARCHAR" property="deviceNum" />
+            <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+  </resultMap>
+  
+  
+  
+	<select id="getDeviceRegRecord" resultMap="VDevicesRegRecListResultMap">
+		select * from v_devices_reg_rec_list where 1=1<if test="beginTime!=null and beginTime!=''">AND DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s')>=#{beginTime}</if>
+  		<if test="endTime!= null and endTime!=''">AND DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s')&lt;=#{endTime}</if><if test="userTel!=null and userTel!=''">and telephone=#{userTel}</if>
+  		<if test="deviceNum!=null and deviceNum!=''">and device_num=#{deviceNum}</if>
+	</select>
+  
+</mapper>

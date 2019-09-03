@@ -1,0 +1,127 @@
+package cn.ritac.mmbs.web.controller.api;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import cn.ritac.mmbs.comm.mqtt.message.KeyValue;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigClientUpMsgData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSetting;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSettingParams;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceControlSend;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceControlSendParams;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.UserDevicesBind;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.service.MQTTService;
+import cn.ritac.mmbs.service.UserDeviceBindService;
+
+@Controller
+@RequestMapping(value = "/mqtt")
+@ResponseBody
+public class MQTTController extends BaseController {
+
+	@Autowired
+	private MQTTService mqttService;
+	@Autowired
+	private DevicesService devicesService;
+	
+	@Autowired
+	private UserDeviceBindService userDeviceBindservice;
+
+	/**
+	 * 配置信息的设置
+	 * 
+	 * @param setting
+	 */
+	@RequestMapping("/setDeviceConfig")
+	public String setDeviceConfig(MQTTDeviceConfigSettingParams setting) {
+
+		Devices devices = new Devices();
+
+		devices.setDeviceNum(setting.getDeviceNum());
+		
+		
+		devices.setDeviceKey(setting.getDeviceKey());
+		Devices deviesInfo = devicesService.find(devices);
+
+		if (deviesInfo != null) {
+
+			MQTTDeviceConfigSetting pojo=new MQTTDeviceConfigSetting();
+			
+			pojo.setDeviceId(setting.getDeviceNum());
+			pojo.setDeviceKey(setting.getDeviceKey());
+			pojo.setMsgType(setting.getMsgType());
+
+			pojo.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
+
+			MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+
+			msgData.setRegEntry(setting.getMsgData().getRegEntry());
+
+			List<KeyValue> list = new ArrayList<>();
+
+			String[] regs = setting.getMsgData().getReg();
+			for (String reg : regs) {
+
+				KeyValue item = new KeyValue();
+				item.setAddr(Integer.parseInt(reg.split(":")[0]));
+				item.setVal(reg.split(":")[1]);
+				list.add(item);
+
+			}
+			
+			KeyValue[] keyValues=new KeyValue[] {};
+			
+			
+			msgData.setReg(list.toArray(keyValues));
+
+			pojo.setMsgData(msgData);
+
+			mqttService.setDeviceConfig(pojo);
+			return returnLogic.resultSuccess();
+		}
+		return returnLogic.resultError("该设备不存在，无法设置配置信息!");
+	}
+
+	/**
+	 * 控制命令下发
+	 * 
+	 * @param controlCommand
+	 */
+	@RequestMapping("/sendDeviceControlCommand")
+	public String sendDeviceControlCommand(MQTTDeviceControlSendParams controlCommand) {
+		UserDevicesBind ud=new UserDevicesBind();
+		
+		Devices devices = new Devices();
+		devices.setDeviceNum(controlCommand.getDeviceNum());
+		devices.setDeviceKey(controlCommand.getDeviceKey());
+		Devices deviesInfo = devicesService.find(devices);
+		if (deviesInfo != null) {
+			ud.setDeviceId(deviesInfo.getId());
+			ud.setUserId(controlCommand.getUserId());
+			UserDevicesBind UserDevicesBindInfo=userDeviceBindservice.find(ud);
+			if(UserDevicesBindInfo!=null){
+				ModelMapper modelMapper = new ModelMapper();
+				MQTTDeviceControlSend pojo = modelMapper.map(controlCommand, MQTTDeviceControlSend.class);
+				pojo.setDeviceId(controlCommand.getDeviceNum());
+				pojo.setTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
+				mqttService.sendDeviceControlCommand(pojo);
+				return returnLogic.resultSuccess();
+			}else{
+				return returnLogic.resultError("该用户没有权限操作此设备!");
+			}
+		}else{
+			return returnLogic.resultError("该设备不存在，或者设备密码不正确!");
+			
+		}
+		
+
+	}
+
+}

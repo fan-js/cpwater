@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="cn.ritac.mmbs.mybatis.mapper.AssetsFunctionMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.AssetsFunction">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="list_assets" jdbcType="BIT"
+			property="listAssets" />
+		<result column="add_assets" jdbcType="BIT" property="addAssets" />
+		<result column="update_assets" jdbcType="BIT"
+			property="updateAssets" />
+		<result column="delete_assets" jdbcType="BIT"
+			property="deleteAssets" />
+		<result column="update_time" jdbcType="TIMESTAMP"
+			property="updateTime" />
+	</resultMap>
+
+
+	<select id="findAssetsFunctionByRoleId"
+		resultMap="BaseResultMap">
+		SELECT
+		af.*
+		FROM mmbs_assets_function af
+		INNER JOIN
+		mmbs_role_assets_fuction raf on raf.assets_function_id = af.id
+		WHERE
+		raf.role_id = #{roleId}
+		GROUP BY af.update_time DESC LIMIT 1
+	</select>
+</mapper>

@@ -1,0 +1,80 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.service.impl;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder;
+
+import cn.ritac.mmbs.service.SseServices;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> shiroJWT
+ *<br><b>ClassName:</b> SseServicesImp
+ *<br><b>CreatTime:</b> 2019年5月17日下午2:31:38
+ */
+@Service
+public class SseServicesImp extends BaseServiceImpl<SseEmitter> implements SseServices {
+	private static List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+	/*
+	 * 1. 提供SseEmitter对象注册验证功能
+	 */
+	public void register(final SseEmitter emitter) {
+		// 判断当前SseEmitter是否已反馈,如果是则移除集合内当前对象
+		emitter.onCompletion(() -> {
+			removeEmitter(emitter);
+		});
+		// 判断当前SseEmitter是否超时,如果是则移除集合内当前对象
+		emitter.onTimeout(() -> {
+			removeEmitter(emitter);
+		});
+		// 验证通过后把传入的SseEmitter对象放入集合
+		emitters.add(emitter);
+	}
+
+	/*
+	 * 2. 移除集合内所有SseEmitter对象
+	 */
+	private void removeEmitter(final SseEmitter emitter) {
+		emitters.remove(emitter);
+	}
+
+	/*
+	 * 3. 通过SseEmitter对象发送信息
+	 */
+	@Async
+	public void sendMsg(String msgData) {
+		// 存放无效的SseEmitter对象,下边集中销毁
+		List<SseEmitter> deadEmitters = new ArrayList<SseEmitter>();
+		// 给集合内所有SseEitter对象发送信息
+		emitters.forEach(emitter -> {
+			// 事件对象
+			SseEventBuilder sseEventBuilder = SseEmitter.event();
+			// 加载数据
+			sseEventBuilder.data(msgData);
+			try {
+				// 发送
+				emitter.send(sseEventBuilder);
+				emitter.complete();
+			} catch (IOException e) {
+				// 当前对象不可执行发送,归类为无效SseEmitter对象
+				deadEmitters.add(emitter);
+			}
+		});
+		// 遍历结束,从集合内清掉无效对象
+		emitters.removeAll(deadEmitters);
+	}
+}

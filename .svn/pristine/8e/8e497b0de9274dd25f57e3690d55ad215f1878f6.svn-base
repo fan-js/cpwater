@@ -1,0 +1,20 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public class MsgDataEvent {
+	public int getEventEntry() {
+		return eventEntry;
+	}
+	public void setEventEntry(int eventEntry) {
+		this.eventEntry = eventEntry;
+	}
+
+	public MsgDataEventInfo[] getEventInfo() {
+		return eventInfo;
+	}
+	public void setEventInfo(MsgDataEventInfo[] eventInfo) {
+		this.eventInfo = eventInfo;
+	}
+
+	private int eventEntry;
+	private MsgDataEventInfo[] eventInfo;
+}

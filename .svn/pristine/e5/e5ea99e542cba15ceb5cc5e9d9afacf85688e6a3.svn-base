@@ -1,0 +1,23 @@
+package cn.ritac.mmbs.service;
+
+
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.mybatis.model.VDeviceEventREC;
+
+public interface DevicesEventRecService extends BaseService<DevicesEventRec,Integer>  {
+
+	
+	/**
+	 * 得到事件列表
+	 * @param beginTime
+	 * @param endTime
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	public PageInfo<VDeviceEventREC> getDeviceEventRecord (String beginTime,
+			String endTime, 
+			String deviceNum,int pageIndex,int pageSize);
+}

@@ -1,0 +1,20 @@
+package cn.ritac.mmbs.service;
+
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.model.Devices;
+
+
+public interface DevicesService  extends BaseService<Devices,Integer>  {
+	
+	
+	
+	/**
+	 * 得到设备列表
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	PageInfo<Devices> getDevices(String deviceNum,int pageIndex,int pageSize);
+}

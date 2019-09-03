@@ -1,0 +1,54 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.service.DevicesService;
+
+/**
+ * 设备
+ * @author chenfang
+ *
+ */
+@Service
+public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements DevicesService {
+
+	@Autowired
+	private DevicesMapper devicesMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesMapper);
+	}
+	@Override
+	public PageInfo<Devices> getDevices(String deviceNum, int pageIndex, int pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+		
+		Devices deviceInfo=new Devices();
+		
+		if(deviceNum!=null&&deviceNum!="")
+		{
+			deviceInfo.setDeviceNum(deviceNum);
+		}
+		
+		List<Devices> list=devicesMapper.select(deviceInfo);
+		
+		return new PageInfo<>(list);
+	}
+	
+	@Override
+		public void delBindUserDev(int device_id) {
+			devicesMapper.delBindUserDev(device_id);
+			
+		}
+	
+	@Override
+		public DevicesState getUserDevicesState(int uid) {
+			return devicesMapper.getUserDevicesState(uid);
+		}
+	
+}

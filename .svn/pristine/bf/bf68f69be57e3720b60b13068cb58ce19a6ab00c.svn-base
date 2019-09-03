@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.ExportMapper">
+	
+	<!-- 1. 分区告警 -->
+	<select id="export_groupWing" resultType="cn.ritac.mmbs.web.dto.export.GroupWringVo">
+		SELECT
+			 der.create_time data_time
+			,g.group_name
+			,dev.device_num
+			,dev.device_model
+			,prm.param_descript
+		FROM mmbs_devices dev
+		INNER JOIN mmbs_devices_event_rec der ON dev.id = der.device_id
+		INNER JOIN mmbs_params prm on der.event_content = prm.param_value AND prm.param_col='params'
+		INNER JOIN mmbs_group_device gd ON dev.id = gd.device_id
+		INNER JOIN mmbs_group g ON gd.group_id = g.id
+	<if test="startTime != null and endTime != null">
+		WHERE der.create_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY der.id
+		ORDER BY der.create_time DESC
+	</select>
+	
+	<!-- 2. 设备总在线状况 -->
+	<select id="export_deviceCount" resultType="cn.ritac.mmbs.web.dto.export.DeviceCountVo">
+		SELECT
+			 NOW() data_time
+			,SUM(1) num
+			,SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) onlineNum
+			,SUM(CASE dev.`online` WHEN 0 THEN 1 ELSE 0 END) offlineNum
+			,SUM(CASE dev.isFault WHEN 1 THEN 1 ELSE 0 END)  faultNum
+			,ROUND(SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) / SUM(1),2) onlineper
+		FROM mmbs_devices dev
+	</select>
+	
+	<!-- 3. 设备区域在线状况 -->
+	<select id="export_deviceGroupCount" resultType="cn.ritac.mmbs.web.dto.export.DeviceGroupCountVo">
+		SELECT
+			 g.update_time data_time
+			,g.group_name
+			,SUM(1) num
+			,SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) onlineNum
+			,SUM(CASE dev.`online` WHEN 0 THEN 1 ELSE 0 END) offlineNum
+			,SUM(CASE dev.isFault WHEN 1 THEN 1 ELSE 0 END)  faultNum
+			,ROUND(SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) / SUM(1),2) onlineper
+		FROM  mmbs_group g
+		INNER JOIN mmbs_group_device gd on g.id = gd.group_id
+		LEFT JOIN mmbs_devices dev on gd.device_id = dev.id
+	<if test="startTime != null and endTime != null">
+		WHERE g.update_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY g.id
+	</select>
+	
+	<!-- 4. 区域设备在线率  -->
+	<select id="export_deviceGroupPer" resultType="cn.ritac.mmbs.web.dto.export.DeviceGroupPerVo">
+		SELECT
+			 g.update_time data_time
+			,g.group_name
+			,ROUND(SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) / SUM(1),2) onlineper
+		FROM  mmbs_group g
+		INNER JOIN mmbs_group_device gd on g.id = gd.group_id
+		LEFT JOIN mmbs_devices dev on gd.device_id = dev.id
+	<if test="startTime != null and endTime != null">
+		WHERE g.update_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY g.id
+	</select>
+	
+	<!-- 5. 设备月市电在线时长  -->
+	<select id="export_deviceMonthElectric" resultType="cn.ritac.mmbs.web.dto.export.DeviceMonthElectricVo">
+		SELECT
+			w.create_time data_time
+			,dev.device_num
+			,g.group_name
+			,dev.device_model
+			,w.minutes
+			,SUM(w.workingHours) electric
+			,ROUND(SUM(w.workingHours) / w.minutes,2) electricPer
+			,SUM(w.hours) ups_electric
+		  ,ROUND(SUM(w.hours) / w.minutes,2) ups_electricPer
+		FROM mmbs_workinghour w
+		INNER JOIN mmbs_group_device gd ON w.device_id = gd.device_id
+		INNER JOIN mmbs_group g ON gd.group_id = g.id
+		INNER JOIN mmbs_devices dev ON dev.id = gd.device_id
+	<if test="startTime != null and endTime != null">
+		WHERE w.create_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY g.id,w.months
+		ORDER BY w.months
+	</select>
+	
+	<!-- 6. 设备月网络在线时长 -->
+	<select id="export_deviceMonthNet" resultType="cn.ritac.mmbs.web.dto.export.DeviceMonthNetVo">
+		SELECT
+			w.create_time data_time
+			,dev.device_num
+			,g.group_name
+			,dev.device_model
+			,w.minutes
+			,SUM(w.networkingHours) net
+			,ROUND(SUM(w.networkingHours) / w.minutes,2) netPer
+			,SUM(w.net_hours) mobile_net
+			,ROUND(SUM(w.net_hours) / w.minutes,2) mobile_netPer
+		FROM mmbs_workinghour w
+		INNER JOIN mmbs_group_device gd ON w.device_id = gd.device_id
+		INNER JOIN mmbs_group g ON gd.group_id = g.id
+		INNER JOIN mmbs_devices dev ON dev.id = gd.device_id
+	<if test="startTime != null and endTime != null">
+		WHERE w.create_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY g.id,w.months
+		ORDER BY w.months
+	</select>
+	
+	<!-- 7.工单统计 -->
+	<select id="export_orderGroupPer" resultType="cn.ritac.mmbs.web.dto.export.OrderGroupPerVo">
+		SELECT
+			d.create_time data_time
+			,g.group_name
+			,SUM(1) num 
+			,SUM(CASE d.order_state WHEN 0 THEN 1 ELSE 0 END) untreated
+			,SUM(CASE d.order_state WHEN 1 THEN 1 ELSE 0 END) processing
+			,SUM(CASE d.order_state WHEN 2 THEN 1 ELSE 0 END) processed
+			,ROUND(SUM(CASE d.order_state WHEN 2 THEN 1 ELSE 0 END) /SUM(1),2) processedPer
+		FROM mmbs_group g
+		INNER JOIN mmbs_group_device gd on g.id =gd.group_id
+		INNER JOIN mmbs_devices dev on gd.device_id = dev.id
+		INNER JOIN mmbs_devices_event_rec der on dev.id = der.device_id
+		INNER JOIN mmbs_order d on d.event_id = der.id
+	<if test="startTime != null and endTime != null">
+		WHERE d.create_time BETWEEN #{startTime}  AND #{endTime}
+	</if>
+		GROUP BY g.id
+	</select>
+</mapper>

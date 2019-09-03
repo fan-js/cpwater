@@ -1,0 +1,48 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.Date;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.ResultMap;
+import org.apache.ibatis.annotations.Select;
+
+
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.web.dto.EventDto;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import cn.ritac.mmbs.web.dto.convert.ProporVO;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesMapper extends Mapper<Devices> {
+
+	public Devices getDevice(@Param("deviceNum") String deviceNum,@Param("key")  String key);
+
+	public void saveStatusOnLine(@Param("device_id") String device_id,@Param("slaveId")  String slaveId,@Param("nowTime")  Date nowTime);
+
+	public void saveStatusUnOnLine(@Param("device_id") String device_id,@Param("slaveId")  String slaveId,@Param("nowTime")  Date nowTime);
+
+	public DevicesState getUserDevicesState(int uid);
+
+	public void delBindUserDev(int device_id);
+
+	public List<Devices> findDeviceOfGroup(int groupId);
+
+	public List<Devices> findDeviceOfRole(@Param("groupId") int groupId, @Param("roleId") int roleId);
+
+	public List<ProporVO> deviceProporList();
+
+	public List<ProporVO> eventProporList();
+
+	public List<EventVO> evenList(EventDto eventDto);
+
+	@Select("SELECT * FROM mmbs_devices d WHERE d.id not in ( SELECT gd.device_id FROM mmbs_group_device gd )")
+	@ResultMap("BaseResultMap")
+	public List<Devices> findAllNotInGroup();
+
+	public List<Devices> findDeviceByCondition(@Param("devNum") String devNum, @Param("devModel") String devModel,
+			@Param("devPosit") String devPosit, @Param("devRemark") String devRemark, @Param("on_line") Boolean on_line,
+			@Param("groupId") Integer groupId);
+
+}

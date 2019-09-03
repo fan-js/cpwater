@@ -1,0 +1,23 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.mapper.EventSettingMapper;
+import cn.ritac.mmbs.mybatis.model.EventSetting;
+import cn.ritac.mmbs.mybatis.model.UserRolesBind;
+import cn.ritac.mmbs.service.EventSettingService;
+import cn.ritac.mmbs.service.RolesService;
+
+@Service
+public class EventSettingServiceImpl  extends BaseServiceImpl<EventSetting> implements EventSettingService  {
+
+	@Autowired
+	private EventSettingMapper eventSettingMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(eventSettingMapper);
+	}
+	
+}

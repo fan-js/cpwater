@@ -1,0 +1,733 @@
+package cn.ritac.mmbs.web.controller.api;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigClientUpMsgData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSetting;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSettingParams;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceSelfConfig;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceSelfConfigMsgData;
+import cn.ritac.mmbs.comm.mqtt.newdev.MQTTAddrVal;
+import cn.ritac.mmbs.comm.mqtt.newdev.MsgDataUpOpt;
+import cn.ritac.mmbs.mybatis.model.Bakserve;
+import cn.ritac.mmbs.mybatis.model.Dataupopt;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.service.MQTTService;
+import cn.ritac.mmbs.web.dto.CameraDTO;
+import cn.ritac.mmbs.web.dto.CameraPojo;
+import cn.ritac.mmbs.web.dto.MQTTCommandDTO;
+import cn.ritac.mmbs.web.dto.SysDto;
+import cn.ritac.mmbs.web.dto.convert.AiDiDoutVO;
+import cn.ritac.mmbs.web.dto.convert.MQTTCommandPojo;
+import cn.ritac.mmbs.web.dto.convert.MQTTControlCommandMsgData;
+import cn.ritac.mmbs.web.dto.convert.MQTTControlCommandMsgData2;
+import cn.ritac.mmbs.web.dto.convert.MQTTControlCommandMsgData3;
+import cn.ritac.mmbs.web.dto.convert.MQTTControlCommandPojo;
+import cn.ritac.mmbs.web.dto.convert.SettingConfigPojo;
+import cn.ritac.mmbs.web.dto.convert.SettingConfigVO;
+import cn.ritac.mmbs.web.dto.convert.SysPojo;
+import cn.ritac.mmbs.web.dto.convert.SysVO;
+
+@Controller
+@RequestMapping(value = "/mqtt")
+@ResponseBody
+public class MQTTController extends BaseController {
+
+	@Autowired
+	private MQTTService mqttService;
+	@Autowired
+	private DevicesService devicesService;
+
+	/**
+	 * 设置设备基础信息,下发指令给设备 device
+	 * @param sysPojo
+	 * @return msg
+	 */
+	@PutMapping("/setSysConfig")
+	public String setSysConfig(@RequestBody SysDto sysDto) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(sysDto)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		// 1. 解析参数,插入数据库 ; 2. 调用命令下发指令给设备
+		// 涉及到表: device , bakserver , dataupopt
+		// 设备主键
+		String msg = "";
+		int id = sysDto.getId();
+		List<SysPojo> sysPojos = sysDto.getData();
+		List<SysVO> sysVOs = new ArrayList<SysVO>();
+		List<MQTTAddrVal> addrValList = new ArrayList<MQTTAddrVal>();
+		if (!StringUtils.isEmpty(id) && !StringUtils.isEmpty(sysPojos)) {
+			Devices devices = new Devices();
+			devices.setId(id);
+			devices = devicesService.find(devices);
+			Dataupopt dataupopt = new Dataupopt();
+			for (SysPojo pojo : sysPojos) {
+				String key = pojo.getKey();
+				switch (key) {
+				case "device":// 1. 取 device
+					sysVOs = pojo.getValue();
+					if (!StringUtils.isEmpty(sysVOs) && !StringUtils.isEmpty(devices)) {
+						for (SysVO sysVO : sysVOs) {
+							String Vkey = sysVO.getKey();
+							switch (Vkey) {
+							case "firstLink":
+								devices.setFirstlink(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "keepAliveInterval":
+								devices.setKeepaliveinterval(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "dataUpTime":
+								devices.setDatauptime(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "firstServer":
+								devices.setFirstserver(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					break;
+				case "bakserver": // 2. 取 bakserver
+					sysVOs = pojo.getValue();
+					if (!StringUtils.isEmpty(sysVOs)) {
+						MQTTAddrVal addrVal = new MQTTAddrVal();
+						for (SysVO sysVO : sysVOs) {
+							String Vkey = sysVO.getKey();
+							switch (Vkey) {
+							case "url":
+								addrVal.setAddr(sysVO.getValue().toString());
+								break;
+							case "port":
+								addrVal.setVal(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							default:
+								break;
+							}
+						}
+						addrValList.add(addrVal);
+					}
+					break;
+				case "dataupopt":// 3. 取 dataupopt
+					sysVOs = pojo.getValue();
+					if (!StringUtils.isEmpty(sysVOs)) {
+						for (SysVO sysVO : sysVOs) {
+							String Vkey = sysVO.getKey();
+							switch (Vkey) {
+							case "ain":
+								dataupopt.setAin(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "aout":
+								dataupopt.setAout(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "din":
+								dataupopt.setDin(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "dout":
+								dataupopt.setDout(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "reg":
+								dataupopt.setReg(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							case "event":
+								dataupopt.setEvent(Integer.parseInt(sysVO.getValue().toString()));
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			// 进行控制命令下发<从三个对象<devices、bakserve、dataupopt>取数,并重新封装,然后调用下发指令>
+			// 主类
+			MQTTDeviceSelfConfig mqttDeviceSelfConfig = new MQTTDeviceSelfConfig();
+			mqttDeviceSelfConfig.setProductID("IVMB");
+			mqttDeviceSelfConfig.setProductKey("NJcasyml");
+			mqttDeviceSelfConfig.setMsgType(60007);
+			mqttDeviceSelfConfig.setDeviceID(devices.getDeviceNum());
+			mqttDeviceSelfConfig.setDeviceKey(devices.getDeviceKey());
+			// msgdata 类
+			MQTTDeviceSelfConfigMsgData mqttDeviceSelfConfigMsgData = new MQTTDeviceSelfConfigMsgData();
+			mqttDeviceSelfConfigMsgData.setAddr(1);
+			mqttDeviceSelfConfigMsgData.setTime(new Date());
+			mqttDeviceSelfConfigMsgData.setFirstLink(devices.getFirstlink());
+			mqttDeviceSelfConfigMsgData.setFirstServer(devices.getFirstserver());
+			mqttDeviceSelfConfigMsgData.setKeepAliveInterval(devices.getKeepaliveinterval());
+			//bakserver
+			mqttDeviceSelfConfigMsgData.setBakServer(addrValList);
+			// DataUpOpt 类
+			MsgDataUpOpt msgDataUpOpt = new MsgDataUpOpt();
+			msgDataUpOpt.setAin(dataupopt.getAin());
+			msgDataUpOpt.setAout(dataupopt.getAout());
+			msgDataUpOpt.setDin(dataupopt.getDin());
+			msgDataUpOpt.setDout(dataupopt.getDout());
+			msgDataUpOpt.setReg(dataupopt.getReg());
+			msgDataUpOpt.setEvent(dataupopt.getEvent());
+			mqttDeviceSelfConfigMsgData.setDataUpOpt(msgDataUpOpt);
+			mqttDeviceSelfConfig.setMsgData(mqttDeviceSelfConfigMsgData);
+
+			msg = mqttService.sendDeviceSelfConfigCommand(mqttDeviceSelfConfig);
+		}
+		return returnLogic.resultJson(200, msg);
+	}
+
+	/**
+	 * 设置设备配置参数 REG
+	 * 
+	 * @param setting
+	 */
+	@PutMapping("/deviceConfig")
+	public String setDeviceConfig(@RequestBody MQTTDeviceConfigSettingParams setting) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(setting)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices deviesInfo = new Devices();
+		deviesInfo.setId(setting.getId());
+		deviesInfo = devicesService.find(deviesInfo);
+		// 检测当前指令下发对象合法性
+		if (!StringUtils.isEmpty(deviesInfo)) {
+			MQTTDeviceConfigSetting mqttDeviceConfigSetting = new MQTTDeviceConfigSetting();
+			mqttDeviceConfigSetting.setProductID("IVMB");
+			mqttDeviceConfigSetting.setDeviceID(deviesInfo.getDeviceNum());
+			mqttDeviceConfigSetting.setDeviceKey(deviesInfo.getDeviceKey());
+			mqttDeviceConfigSetting.setMsgType(108);
+			MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+			msgData.setAddr(1);
+			List<SettingConfigPojo> dataList = setting.getData();
+			if (!StringUtils.isEmpty(dataList)) {
+				List<MQTTAddrVal> regList = new ArrayList<MQTTAddrVal>();
+				MQTTAddrVal addrVal = new MQTTAddrVal();
+				for (SettingConfigPojo pojo : dataList) {
+					String key = pojo.getKey();
+					switch (key) {
+					case "doorAlarmDelaytime":
+						List<SettingConfigVO> vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("doorAlarmDelaytime")) {
+								addrVal.setAddr(1);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "lighting":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("lightingUpperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(2);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("lightingLowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(3);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "temperature":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("temperatureUppperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(4);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("temperatureLowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(5);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "voltage":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("voltageUpperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(6);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("voltageLowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(7);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "currentUpperlimit":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("currentUpperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(8);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "currentLeakagelimit":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("currentLeakagelimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(9);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "upsWarningvoltage":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("upsWarningvoltageupper")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(129);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("upsWarningvoltagelower")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(130);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "upsWarningcapacity":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("upsWarningcapacityupper")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(131);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("upsWarningcapacitylower")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(132);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "upsCharge":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("upsChargeupperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(133);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("upsChargelowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(134);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "upsDischarge":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("upsDischargeupperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(135);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("upsDischargelowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(136);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "upsTemperature":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							if (vo.getKey().equals("upsTemperatureupperlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(137);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+							if (vo.getKey().equals("upsTemperaturelowerlimit")) {
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(138);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+							}
+						}
+						break;
+					case "camera1":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							key = vo.getKey();
+							switch (key) {
+							case "sn":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(33);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "model":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(34);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "mac":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(35);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "ip":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(36);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "state":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(37);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "account":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(43);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "password":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(44);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							default:
+								break;
+							}
+						}
+						break;
+					case "camera2":
+						vos = pojo.getValue();
+						for (SettingConfigVO vo : vos) {
+							key = vo.getKey();
+							switch (key) {
+							case "sn":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(38);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "model":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(39);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "mac":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(40);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "ip":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(41);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "state":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(42);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "account":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(45);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+							case "password":
+								addrVal = new MQTTAddrVal();
+								addrVal.setAddr(46);
+								addrVal.setVal(vo.getValue());
+								regList.add(addrVal);
+								break;
+
+							default:
+								break;
+							}
+						}
+						break;
+					default:
+						break;
+					}
+				}
+				msgData.setReg(regList);
+			}
+			mqttDeviceConfigSetting.setMsgData(msgData);
+			String resMsg = mqttService.setDeviceConfig(mqttDeviceConfigSetting);
+			return returnLogic.resultJson(200, resMsg);
+
+		}
+		return returnLogic.resultErrorJsonString(206, "执行失败，设备不存在。");
+
+	}
+
+	/**
+	 * 设置设备配置参数 REG之camera
+	 * 
+	 * @param setting
+	 */
+	@PutMapping("/cameraConfig")
+	public String cameraConfig(@RequestBody CameraDTO setting) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(setting)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices deviesInfo = new Devices();
+		deviesInfo.setId(setting.getId());
+		deviesInfo = devicesService.find(deviesInfo);
+		// 检测当前指令下发对象合法性
+		if (!StringUtils.isEmpty(deviesInfo)) {
+			MQTTDeviceConfigSetting mqttDeviceConfigSetting = new MQTTDeviceConfigSetting();
+			mqttDeviceConfigSetting.setProductID("IVMB");
+			mqttDeviceConfigSetting.setDeviceID(deviesInfo.getDeviceNum());
+			mqttDeviceConfigSetting.setDeviceKey(deviesInfo.getDeviceKey());
+			mqttDeviceConfigSetting.setMsgType(108);
+			MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+			msgData.setAddr(1);
+			List<CameraPojo> dataList = setting.getData();
+
+			if (!StringUtils.isEmpty(dataList)) {
+				List<MQTTAddrVal> regList = new ArrayList<MQTTAddrVal>();
+				MQTTAddrVal addrVal = new MQTTAddrVal();
+				// camera1
+				CameraPojo pojo = dataList.size() >= 1 ? dataList.get(0) : null;
+				if (pojo != null) {
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(33);// sn
+					addrVal.setVal(pojo.getSn());
+					regList.add(addrVal);
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(43);// account
+					addrVal.setVal(pojo.getAccount());
+					regList.add(addrVal);
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(44);// password
+					addrVal.setVal(pojo.getPassword());
+					regList.add(addrVal);
+				}
+				// camera2
+				pojo = dataList.size() >= 2 ? dataList.get(1) : null;
+				if (pojo != null) {
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(38);// sn
+					addrVal.setVal(pojo.getSn());
+					regList.add(addrVal);
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(45);// account
+					addrVal.setVal(pojo.getAccount());
+					regList.add(addrVal);
+					addrVal = new MQTTAddrVal();
+					addrVal.setAddr(46);// password
+					addrVal.setVal(pojo.getPassword());
+					regList.add(addrVal);
+				}
+				msgData.setReg(regList);
+				mqttDeviceConfigSetting.setMsgData(msgData);
+			}
+			String resMsg = mqttService.setDeviceConfig(mqttDeviceConfigSetting);
+			return returnLogic.resultJson(200, resMsg);
+		}
+		return returnLogic.resultErrorJsonString(206, "执行失败，设备不存在。");
+
+	}
+
+	/**
+	 * 控制命令下发<读取数据>
+	 * 
+	 * @param controlCommand
+	 */
+	@PutMapping("/deviceControlCommand")
+	public String sendDeviceControlCommand(@RequestBody MQTTCommandDTO controlCommand) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(controlCommand)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devSearch = new Devices();
+		devSearch.setId(controlCommand.getId());
+		devSearch = devicesService.find(devSearch);
+		if (StringUtils.isEmpty(devSearch)) {
+			return returnLogic.resultErrorJsonString(206, "未获取到设备信息。");
+		}
+		MQTTControlCommandPojo commandPojo = new MQTTControlCommandPojo();
+		commandPojo.setProductID("IVMB");
+		commandPojo.setDeviceID(devSearch.getDeviceNum());
+		commandPojo.setDeviceKey(devSearch.getDeviceKey());
+		int msgType = controlCommand.getMsgType();
+		commandPojo.setMsgType(msgType);
+		if (msgType == 60006) { // 读设备信息,指定板块读取
+			MQTTControlCommandMsgData2 msgData = new MQTTControlCommandMsgData2();
+			msgData.setAddr(1);
+			msgData.setType(controlCommand.getType());
+			commandPojo.setMsgData(msgData);
+		} else {// 读ai di do 等
+			MQTTControlCommandMsgData msgData = new MQTTControlCommandMsgData();
+			msgData.setAddr(1);
+			commandPojo.setMsgData(msgData);
+		}
+		mqttService.sendDeviceControlCommand(commandPojo);
+		return returnLogic.resultJson(200, "指令已下发！");
+
+	}
+
+	/**
+	 * 控制命令下发<写 do>
+	 * 
+	 * @param controlCommand
+	 */
+	@PutMapping("/changeDO")
+	public String changeDO(@RequestBody MQTTCommandPojo controlCommand) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(controlCommand)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devSearch = new Devices();
+		devSearch.setId(controlCommand.getId());
+		devSearch = devicesService.find(devSearch);
+		if (StringUtils.isEmpty(devSearch)) {
+			return returnLogic.resultErrorJsonString(206, "未获取到设备信息。");
+		}
+		MQTTControlCommandPojo commandPojo = new MQTTControlCommandPojo();
+		commandPojo.setProductID("IVMB");
+		commandPojo.setDeviceID(devSearch.getDeviceNum());
+		commandPojo.setDeviceKey(devSearch.getDeviceKey());
+		commandPojo.setMsgType(106);
+
+		MQTTControlCommandMsgData3 msgData = new MQTTControlCommandMsgData3();
+		msgData.setAddr(1);
+		List<MQTTAddrVal> dout = new ArrayList<MQTTAddrVal>();
+		List<AiDiDoutVO> listData = controlCommand.getData();
+		if (!StringUtils.isEmpty(listData)) {
+			for (AiDiDoutVO vo : listData) {
+				MQTTAddrVal dot = new MQTTAddrVal();
+				String key = vo.getName().trim();
+				switch (key) {
+				case "电磁锁状态":
+					dot.setAddr(1);
+					dot.setVal(vo.getValue());
+					break;
+				case "照明灯":
+					dot.setAddr(2);
+					dot.setVal(vo.getValue());
+					break;
+				case "风扇":
+					dot.setAddr(3);
+					dot.setVal(vo.getValue());
+					break;
+				case "加热器":
+					dot.setAddr(4);
+					dot.setVal(vo.getValue());
+					break;
+				case "蜂鸣器":
+					dot.setAddr(5);
+					dot.setVal(vo.getValue());
+					break;
+				case "自动重合闸状态":
+					dot.setAddr(6);
+					dot.setVal(vo.getValue());
+					break;
+				case "ONU":
+					dot.setAddr(7);
+					dot.setVal(vo.getValue());
+					break;
+				case "交换机":
+					dot.setAddr(8);
+					dot.setVal(vo.getValue());
+					break;
+				case "摄相机1":
+					dot.setAddr(9);
+					dot.setVal(vo.getValue());
+					break;
+				case "摄相机2":
+					dot.setAddr(10);
+					dot.setVal(vo.getValue());
+					break;
+				case "备用1":
+					dot.setAddr(11);
+					dot.setVal(vo.getValue());
+					break;
+				case "备用2":
+					dot.setAddr(12);
+					dot.setVal(vo.getValue());
+					break;
+				case "报警器消音":
+					dot.setAddr(13);
+					dot.setVal(vo.getValue());
+					break;
+				default:
+					break;
+				}
+				dout.add(dot);
+			}
+		}
+		msgData.setDout(dout);
+		commandPojo.setMsgData(msgData);
+		mqttService.sendDeviceControlCommand(commandPojo);
+		return returnLogic.resultJson(200, "指令已下发！");
+
+	}
+
+}

@@ -1,0 +1,37 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.Date;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.web.dto.EventDto;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import cn.ritac.mmbs.web.dto.convert.ProporVO;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesMapper extends Mapper<Devices> {
+
+	public Devices getDevice(String deviceNum, String key);
+
+	public void saveStatusOnLine(String device_id, String slaveId, Date nowTime);
+
+	public void saveStatusUnOnLine(String device_id, String slaveId, Date nowTime);
+	
+	public DevicesState getUserDevicesState(int uid);
+
+	public void delBindUserDev(int device_id);
+
+	public List<Devices> findDeviceOfGroup(int groupId);
+
+	public List<Devices> findDeviceOfRole(@Param("groupId") int groupId, @Param("roleId") int roleId);
+
+	public List<ProporVO> deviceProporList();
+
+	public List<ProporVO> eventProporList();
+
+	public List<EventVO> evenList(EventDto eventDto);
+
+}

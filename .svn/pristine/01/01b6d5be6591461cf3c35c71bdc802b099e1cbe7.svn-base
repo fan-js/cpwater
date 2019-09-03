@@ -1,0 +1,59 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.comm.mqtt.ServerMQTT;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSetting;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigUp;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceControlSend;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceEventData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceLogin;
+
+public interface MQTTService {
+
+	/**
+	 * 登录信息
+	 * 
+	 * @param login
+	 */
+	public void sendLoginMsg(MQTTDeviceLogin login);
+
+	/**
+	 * 数据上传流程
+	 * 
+	 * @param data
+	 */
+	public void getBaseData(MQTTDeviceData data);
+
+	/**
+	 * 事件上传流程
+	 * 
+	 * @param eventData
+	 */
+	public void getEvent(MQTTDeviceEventData eventData);
+
+	/**
+	 * 配置信息上传
+	 * 
+	 * @param mqttDeviceConfigUp
+	 */
+	public void getDeviceConfig(MQTTDeviceConfigUp mqttDeviceConfigUp);
+	
+	
+	
+	/**
+	 * 配置信息的设置
+	 * @param setting
+	 */
+	public void setDeviceConfig(MQTTDeviceConfigSetting setting);
+	
+	/**
+	 * 控制命令下发
+	 * @param controlCommand
+	 */
+	public void sendDeviceControlCommand(MQTTDeviceControlSend  controlCommand);
+	
+	
+	public void getDeviceStatus();
+	
+
+}

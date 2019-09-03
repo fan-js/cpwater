@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesEventRecMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.DevicesEventRec">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="event_info" jdbcType="VARCHAR" property="eventInfo" />
+    <result column="event_content" jdbcType="VARCHAR" property="eventContent" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  
+	<select id="get_eventList" resultType="cn.ritac.mmbs.web.dto.convert.EventVO">
+		SELECT
+			 eve.id
+			,dev.device_num
+			,pm.param_value  event_name
+			,pm.param_descript event_descript
+			,eve.create_time
+		FROM mmbs_devices_event_rec eve
+		LEFT JOIN mmbs_params pm on eve.event_info = pm.param_key and pm.param_col = 'eventType'
+		LEFT JOIN mmbs_devices dev on eve.device_id = dev.id
+		WHERE 1=1 AND pm.param_action = TRUE 
+		<if test=" id > 0 ">
+		  AND  dev.id = #{id}
+		</if>
+		<if test="eventName != null and eventName != ''">
+			AND pm.param_value LIKE CONCAT('%',#{eventName},'%')
+		</if>
+		<if test="devNum != null and devNum != ''">
+			 AND dev.device_num = #{devNum}
+		</if>
+		GROUP BY eve.id
+		ORDER BY eve.create_time DESC
+	</select>
+	
+	<select id="get_eventTypeOfgroup" resultType="cn.ritac.mmbs.web.dto.convert.AiDiDoutVO">
+	   SELECT 
+		s.group_name name 
+		,sum(1) value 
+		,s.device_num deviceNum
+		,s.descript
+		FROM (
+				SELECT
+				gp.*
+				,pm.param_value descript 
+				,eve.event_info
+				,gd.device_id
+				,dev.device_num
+				FROM mmbs_group gp
+				INNER JOIN mmbs_group_device gd on  gp.id = gd.group_id 
+				INNER JOIN mmbs_devices_event_rec eve on gd.device_id=eve.device_id
+				INNER JOIN mmbs_devices dev on dev.id=eve.device_id
+				LEFT JOIN mmbs_params pm on eve.event_info = pm.param_key and pm.param_col='eventType'
+				GROUP BY gp.id,eve.event_info,gd.device_id
+			) s
+		GROUP BY s.id,s.event_info
+	</select>
+	
+	<select id="get_eventCountOfGroup" resultType="cn.ritac.mmbs.web.dto.convert.AiDiDoutVO">
+		SELECT 
+			s.group_name name 
+			,sum(1) value 
+			,'' descript
+			FROM (
+				SELECT
+				gp.*
+				,pm.param_value descript 
+				,eve.event_info
+				,gd.device_id
+				FROM mmbs_group gp
+				INNER JOIN mmbs_group_device gd on  gp.id = gd.group_id 
+				INNER JOIN mmbs_devices_event_rec eve on gd.device_id=eve.device_id
+				LEFT JOIN mmbs_params pm on eve.event_info = pm.param_key and pm.param_col='eventType'
+				GROUP BY gp.id,eve.event_info,gd.device_id
+			) s
+			GROUP BY s.id
+	</select>
+	
+	<select id="get_eventCount" resultType="cn.ritac.mmbs.web.dto.convert.AiDiDoutVO">
+		SELECT
+			s.param_value name
+			,sum(1) value
+			,'' descript
+			FROM(
+			SELECT
+			 eve.event_info
+			,pm.param_value
+			FROM mmbs_devices_event_rec eve
+			INNER JOIN mmbs_params pm on pm.param_key = eve.event_info and pm.param_col= 'eventType'
+			GROUP BY eve.event_info,device_id
+			) s
+			group by event_info
+	</select>
+</mapper>

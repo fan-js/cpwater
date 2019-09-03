@@ -1,0 +1,32 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.web.controller.sse;
+
+import org.springframework.context.ApplicationEvent;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> PayCompletedEvent
+ *<br><b>CreatTime:</b> 2019年5月8日下午3:26:31
+ */
+
+public class SendMsgCompletedEvent extends ApplicationEvent {
+	private static final long serialVersionUID = 1L;
+	private String msgData;
+
+	public String getMsgData() {
+		return msgData;
+	}
+
+	public SendMsgCompletedEvent(Object source, String msgData) {
+		super(source);
+		this.msgData = msgData;
+	}
+
+}

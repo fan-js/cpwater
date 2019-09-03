@@ -1,0 +1,218 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.web.controller.api;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.github.pagehelper.PageInfo;
+import com.yunpian.sdk.model.Result;
+import com.yunpian.sdk.model.SmsSingleSend;
+import cn.ritac.mmbs.comm.MessageGenerate;
+import cn.ritac.mmbs.comm.MessageTemplateTypeEnum;
+import cn.ritac.mmbs.mybatis.model.Order;
+import cn.ritac.mmbs.mybatis.model.Params;
+import cn.ritac.mmbs.mybatis.model.ResOrder;
+import cn.ritac.mmbs.mybatis.model.Users;
+import cn.ritac.mmbs.service.OrderService;
+import cn.ritac.mmbs.service.UsersService;
+import cn.ritac.mmbs.web.dto.OrderDto;
+import cn.ritac.mmbs.web.dto.convert.StatisticsData;
+import cn.ritac.mmbs.web.dto.convert.TUserDto;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> OrderController
+ *<br><b>CreatTime:</b> 2019年4月22日上午11:28:59
+ */
+@RestController
+@RequestMapping("/order")
+public class OrderController extends BaseController {
+
+	@Autowired
+	private UsersService userService;
+
+	@Autowired
+	private OrderService orderService;
+
+	/**
+	 * 获取工单列表
+	 * @param orderDto
+	 * @return 工单列表
+	 */
+	@GetMapping("/findOrder")
+	public String findOrder(OrderDto orderDto) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(orderDto)) {
+			return returnLogic.resultErrorJsonString(206, "获取列表失败,输入参数有误。");
+		}
+		int pageIndex = orderDto.getPageIndex();
+		int pageSize = orderDto.getPageSize();
+		PageInfo<ResOrder> orderList = orderService.findOrder(pageIndex, pageSize, orderDto.getOrderState(),
+				orderDto.getEventName());
+		return returnLogic.resultJsonString(200, "查询成功。", orderList);
+	}
+
+	/**
+	 * 派单过程调用,用于选择派给对象
+	 * @return  userList
+	 */
+	@GetMapping("/toDispatchOrder")
+	public String toDispatchOrder() {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		List<Users> userList = userService.findAll();
+		List<TUserDto> resUserList = new ArrayList<TUserDto>();
+		if (!StringUtils.isEmpty(userList)) {
+			for (Users u : userList) {
+				TUserDto tu = new TUserDto();
+				BeanUtils.copyProperties(u, tu);
+				resUserList.add(tu);
+			}
+		}
+		return returnLogic.resultJsonString(200, "查询成功。", resUserList);
+	}
+
+	/**
+	 * 派单给某人
+	 * @param orderDto
+	 * @return msg
+	 */
+	@PutMapping("/dispatchOrder")
+	public String dispatchOrder(@RequestBody OrderDto orderDto) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		// 获取被派人电话,发消息成功,修改工单状态
+		if (StringUtils.isEmpty(orderDto)) {
+			return returnLogic.resultErrorJsonString(206, "获取列表失败,输入参数有误。");
+		}
+		Users user = userService.findById(orderDto.getUserId());
+		if (StringUtils.isEmpty(user)) {
+			return returnLogic.resultErrorJsonString(206, "未获取的当前指定人电话号码,请确认用户信息。");
+		}
+		String phone = user.getTelephone();
+		StringBuffer msg = new StringBuffer();
+		msg.append("单号<").append(orderDto.getId()).append(">内容<").append(orderDto.getEventName()).append(">");
+		// 第三方SDK发送验证
+		Result<SmsSingleSend> states = MessageGenerate.SendMsg(phone, msg.toString(),
+				MessageTemplateTypeEnum.OrderMsgTemplate);
+		if (!states.isSucc()) { // 上生产后去掉code回显
+			return returnLogic.resultErrorJsonString(206, "派单短信发送失败。");
+		}
+		// 派单成功,更新工单状态
+		Order o = new Order();
+		o = orderService.findById(orderDto.getId());
+		o.setUserId(orderDto.getUserId());
+		o.setOrderState(1);
+		o.setDispatchTime(new Date());
+		orderService.update(o);
+		return returnLogic.resultJson(200, "派单成功。");
+	}
+
+	/**
+	 * 派单人处理完调用更新订单
+	 * @param orderDto
+	 * @return msg
+	 */
+	@PutMapping("/updateOrder")
+	public String updateOrder(@RequestBody OrderDto orderDto) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		// 接单后:1. 解决问题,修改工单状态,填备注; 2. 未解决问题,改状态,填备注
+		if (StringUtils.isEmpty(orderDto)) {
+			return returnLogic.resultErrorJsonString(206, "获取列表失败,输入参数有误。");
+		}
+		int orderState = orderDto.getOrderState();
+		String orderDescript = orderDto.getOrderDescript();
+		if (orderState != 2 && StringUtils.isEmpty(orderDescript)) {
+			return returnLogic.resultErrorJsonString(206, "请认真填写工单处理情况描述。");
+		}
+		int id = orderDto.getId();
+		Order o = new Order();
+		o = orderService.findById(id);
+		o.setOrderState(orderState);
+		o.setOrderDescript(orderDescript);
+		o.setUpdateTime(new Date());
+		orderService.update(o);
+		return returnLogic.resultJson(200, "更新成功。");
+	}
+
+	/**
+	 * 设置告警派单模式
+	 * @param id
+	 * @param orderAction
+	 * @return msg
+	 */
+	@PutMapping("/orderAction")
+	public String updateOrderParams(int id, boolean orderAction) {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		if (StringUtils.isEmpty(id) || StringUtils.isEmpty(orderAction)) {
+			return returnLogic.resultErrorJsonString(206, "修改失败,输入参数有误。");
+		}
+		orderService.updateEventAction(id, orderAction);
+		return returnLogic.resultJson(200, "操作成功。");
+	}
+
+	/**
+	 * 告警可配置参数列表
+	 * @return paramsList
+	 */
+	@GetMapping("/getOrderParams")
+	public String findParams() {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		List<Params> paramList = orderService.findEventParamList();
+		return returnLogic.resultJsonString(200, "查询成功", paramList);
+
+	}
+
+	/**
+	 * 获取各种状态订单占比数据
+	 * @return statisticsOrderList
+	 */
+	@GetMapping("/statisticsOrder")
+	public String statisticsOrder() {
+		Subject subject = SecurityUtils.getSubject();
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
+		List<StatisticsData> statisticsOrderList = orderService.getStatisticsOfOrder();
+		Map<String, Object> rows = new HashMap<String, Object>();
+		rows.put("rows",statisticsOrderList);
+		return returnLogic.resultJsonString(200, "查询成功。", rows);
+	}
+
+}

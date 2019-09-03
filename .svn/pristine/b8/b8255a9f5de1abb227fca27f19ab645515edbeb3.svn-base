@@ -1,0 +1,337 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesAIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.web.dto.EventDto;
+import cn.ritac.mmbs.web.dto.convert.AiDiDoutVO;
+import cn.ritac.mmbs.web.dto.convert.AiVO;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import cn.ritac.mmbs.web.dto.convert.ProporVO;
+
+/**
+ * 设备
+ * 
+ * @author chenfang
+ *
+ */
+@Service
+public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements DevicesService {
+
+	@Autowired
+	private DevicesMapper devicesMapper;
+
+	@Autowired
+	private DevicesAIMapper devicesAIMapper;
+
+	@Autowired
+	private DevicesDIMapper devicesDIMapper;
+
+	@Autowired
+	private DevicesDoMapper devicesDOMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesMapper);
+	}
+
+	@Override
+	public PageInfo<Devices> getDevices(String deviceNum, int pageIndex, int pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+
+		Devices deviceInfo = new Devices();
+
+		if (deviceNum != null && deviceNum != "") {
+			deviceInfo.setDeviceNum(deviceNum);
+		}
+
+		List<Devices> list = devicesMapper.select(deviceInfo);
+
+		return new PageInfo<>(list);
+	}
+
+	@Override
+	public void delBindUserDev(int device_id) {
+		devicesMapper.delBindUserDev(device_id);
+
+	}
+
+	@Override
+	public DevicesState getUserDevicesState(int uid) {
+		return devicesMapper.getUserDevicesState(uid);
+	}
+
+	@Override
+	public List<Devices> findDeviceOfGroup(int groupId) {
+		return devicesMapper.findDeviceOfGroup(groupId);
+	}
+
+	@Override
+	public List<Devices> findDeviceOfRole(Integer groupId, Integer roleId) {
+		return devicesMapper.findDeviceOfRole(groupId, roleId);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.DevicesService#deviceProporList()
+	 */
+	@Override
+	public List<ProporVO> deviceProporList() {
+		return devicesMapper.deviceProporList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.DevicesService#eventProporList()
+	 */
+	@Override
+	public List<ProporVO> eventProporList() {
+		return devicesMapper.eventProporList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * cn.ritac.mmbs.service.DevicesService#findEventList(cn.ritac.mmbs.web.dto.
+	 * EventDto)
+	 */
+	@Override
+	public PageInfo<EventVO> findEventList(EventDto eventDto) {
+		PageHelper.startPage(eventDto.getPageIndex(), eventDto.getPageSize());
+		List<EventVO> list = devicesMapper.evenList(eventDto);
+		return new PageInfo<>(list);
+	}
+
+	@Override
+	public Map<String, Object> sendAi(int id) {
+		DevicesAI dai = new DevicesAI();
+		dai.setDeviceId(id);
+		DevicesAI aiObj = devicesAIMapper.selectOne(dai);
+		Map<String, Object> aiMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(aiObj)) {
+			List<AiDiDoutVO> aiList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO ai = new AiDiDoutVO();
+			ai.setName("温度");
+			ai.setValue(aiObj.getTemper());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("湿度");
+			ai.setValue(aiObj.getHumidity());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("照度");
+			ai.setValue(aiObj.getIlluminance());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("电压");
+			ai.setValue(aiObj.getVoltage());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("电流");
+			ai.setValue(aiObj.getCurrent());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("漏电流");
+			ai.setValue(aiObj.getCurrentLeakagelimit());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS电压");
+			ai.setValue(aiObj.getUpsVoltage());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS充放电流");
+			ai.setValue(aiObj.getCurrent());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS剩余容量：毫安时");
+			ai.setValue(aiObj.getUpsSurpluscapacityMa());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS剩余容量：百分比");
+			ai.setValue(aiObj.getUpsSurpluscapacityPer());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS最高温度");
+			ai.setValue(aiObj.getUpsUppertemper());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS最低温度");
+			ai.setValue(aiObj.getUpsLowertemper());
+			aiList.add(ai);
+
+			aiMap.put("ain", aiList);
+		}
+		return aiMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see cn.ritac.mmbs.service.DevicesService#sendDi(int)
+	 */
+	@Override
+	public Map<String, Object> sendDi(int id) {
+
+		DevicesDI ddi = new DevicesDI();
+		ddi.setDeviceId(id);
+		DevicesDI doutObj = devicesDIMapper.selectOne(ddi);
+		Map<String, Object> diMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(doutObj)) {
+			List<AiDiDoutVO> diList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO di = new AiDiDoutVO();
+			boolean isType = doutObj.getMainPowerStatus();
+			di.setName("电源状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "市电" : "UPS");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getDoorStatus();
+			di.setName("柜门状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "开启" : "关闭");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getUpsStatus();
+			di.setName("UPS状态 ");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "存在" : "不存在");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getProtectStatus();
+			di.setName("浪涌保护器状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "已动作" : "未动作");
+			diList.add(di);
+
+			diMap.put("din", diList);
+		}
+
+		return diMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see cn.ritac.mmbs.service.DevicesService#sendDo(int)
+	 */
+	@Override
+	public Map<String, Object> sendDo(int id) {
+		DevicesDo dout = new DevicesDo();
+		dout.setDeviceId(id);
+		DevicesDo doutObj = devicesDOMapper.selectOne(dout);
+		Map<String, Object> doutMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(doutObj)) {
+			List<AiDiDoutVO> doutList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO dot = new AiDiDoutVO();
+			dot.setName("电磁锁状态");
+			dot.setValue(doutObj.getElecLock());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName(" 照明灯");
+			dot.setValue(doutObj.getLight());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("蜂鸣器 ");
+			dot.setValue(doutObj.getBeep());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("风扇 ");
+			dot.setValue(doutObj.getFan());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("加热器 ");
+			dot.setValue(doutObj.getHeating());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("自动重合闸状态 ");
+			dot.setValue(doutObj.getReclosState());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("报警器消音");
+			dot.setValue(doutObj.getWaringSilencing());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("ONU");
+			dot.setValue(doutObj.getRelayState_1());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("交换机 ");
+			dot.setValue(doutObj.getRelayState_2());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("摄相机1 ");
+			dot.setValue(doutObj.getRelayState_3());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("摄相机2");
+			dot.setValue(doutObj.getRelayState_4());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("备用1");
+			dot.setValue(doutObj.getRelayState_5());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("备用2");
+			dot.setValue(doutObj.getRelayState_6());
+			doutList.add(dot);
+
+			doutMap.put("dout", doutList);
+		}
+		return doutMap;
+	}
+
+	/* (non-Javadoc)
+	 * @see cn.ritac.mmbs.service.DevicesService#sendCharts(int)
+	 */
+	@Override
+	public Map<String, Object> sendCharts(int id) {
+		Map<String, Object> chartsMap = new HashMap<String, Object>();
+		List<AiVO> aiChartsList = devicesAIMapper.getDeviceAiCharts(id);
+		chartsMap.put("charts", aiChartsList);
+		return chartsMap;
+	}
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.WorkingTimeMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.WorkingTime">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="voltage_starttime" jdbcType="TIMESTAMP" property="voltageStarttime" />
+    <result column="voltage_endtime" jdbcType="TIMESTAMP" property="voltageEndtime" />
+    <result column="ups_starttime" jdbcType="TIMESTAMP" property="upsStarttime" />
+    <result column="ups_endtime" jdbcType="TIMESTAMP" property="upsEndtime" />
+    <result column="lan_starttime" jdbcType="TIMESTAMP" property="lanStarttime" />
+    <result column="lan_endtime" jdbcType="TIMESTAMP" property="lanEndtime" />
+    <result column="sim_starttime" jdbcType="TIMESTAMP" property="simStarttime" />
+    <result column="sim_endtime" jdbcType="TIMESTAMP" property="simEndtime" />
+  </resultMap>
+</mapper>

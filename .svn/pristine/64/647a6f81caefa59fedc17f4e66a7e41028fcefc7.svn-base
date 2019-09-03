@@ -1,0 +1,7 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import cn.ritac.mmbs.mybatis.model.RoleDevice;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface RoleDeviceMapper extends Mapper<RoleDevice> {
+}

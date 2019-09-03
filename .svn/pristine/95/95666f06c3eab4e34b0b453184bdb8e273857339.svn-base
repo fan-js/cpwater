@@ -1,0 +1,102 @@
+package cn.ritac.mmbs.comm.mqtt;
+
+/**
+ * Created by Administrator on 17-2-10.
+ */
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import cn.ritac.mmbs.util.MD5CheckFile;
+
+/**
+ *
+ * Title:Server Description: 服务器向多个客户端推送主题，即不同客户端可向服务器订阅相同主题
+ * 
+ * @author admin 2017年2月10日下午17:41:10
+ */
+
+@Component
+public class ServerMQTT {
+	// tcp://MQTT安装的服务器地址:MQTT定义的端口号
+	public static final String HOST = "tcp://120.27.213.48:1883";
+
+	// 定义一个主题，并订阅 (#:必须在末尾，统配所有层；+：统配当前所处整层；clientId：精准指定当前客户端)
+	public static final String TOPIC = "RITAC/OUT/IVMB/V1/#";
+	// public static final String TOPIC = "YTJK/V1/SIDO/#";
+	// 定义MQTT的ID，可以在MQTT服务配置中指定
+	private static final String clientid = "MWS-" + MD5CheckFile.codeAnyLength("#", 12);
+	private MqttClient client;
+	public static final int QOS = 2;
+
+	@Value("${site.ssePort}")
+	private String ssePort;
+
+	public MqttClient getClient() {
+		return client;
+	}
+
+	private String userName = "admin";
+	private String passWord = "public";
+
+	/**
+	 * 用来连接服务器
+	 * 
+	 * @throws MqttException
+	 */
+	public void connect() throws MqttException {
+
+		if (client == null) {
+			client = new MqttClient(HOST, clientid, new MemoryPersistence());
+		}
+
+		MqttConnectOptions options = new MqttConnectOptions();
+		// 掉线自动重连
+		options.setAutomaticReconnect(true);
+		// 掉线回话清除
+		options.setCleanSession(false);
+		options.setUserName(userName);
+		options.setPassword(passWord.toCharArray());
+		// 设置超时时间
+		options.setConnectionTimeout(20);
+		// 设置会话心跳时间
+		options.setKeepAliveInterval(20);
+		// 当前客户机遗言、掉线触发
+		// options.setWill("IVMB/V1/SIDO/CLOSE", (clientid+":close").getBytes(), 2,
+		// false);
+		// 读取遗言消息
+		// String str = new String(options.getWillMessage().getPayload());
+		// System.out.println("遗言信息：-------->"+str);
+		try {
+			// 这里调用的回调
+			client.setCallback(new PushCallback(ServerMQTT.this, ssePort));
+			client.connect(options);
+			client.subscribe(TOPIC, QOS);
+			// topic11 = client.getTopic(TOPIC);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 *
+	 * @param topic
+	 * @param message
+	 * @throws MqttPersistenceException
+	 * @throws MqttException
+	 */
+	public void publish(MqttTopic topic, MqttMessage message) throws MqttPersistenceException, MqttException {
+		MqttDeliveryToken token = topic.publish(message);
+		// token.waitForCompletion();
+		System.out.println("message is published completely! " + token.isComplete());
+	}
+
+}

@@ -1,0 +1,14 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import org.apache.ibatis.annotations.Delete;
+
+import cn.ritac.mmbs.mybatis.model.GroupDevice;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface GroupDeviceMapper extends Mapper<GroupDevice> {
+
+	@Delete("DELETE  FROM mmbs_group_device where group_id = #{0}")
+	public void deleteByCol(int groupId);
+
+	public void deleteByObj(GroupDevice gd);
+}

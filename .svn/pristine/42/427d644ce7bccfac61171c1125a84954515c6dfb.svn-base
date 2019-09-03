@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.Devices">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="create_time" jdbcType="TIMESTAMP"
+			property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP"
+			property="updateTime" />
+		<result column="device_num" jdbcType="VARCHAR"
+			property="deviceNum" />
+		<result column="device_key" jdbcType="VARCHAR"
+			property="deviceKey" />
+		<result column="device_model" jdbcType="VARCHAR"
+			property="deviceModel" />
+		<result column="longitude" jdbcType="VARCHAR"
+			property="longitude" />
+		<result column="dimension" jdbcType="VARCHAR"
+			property="dimension" />
+		<result column="position_des" jdbcType="VARCHAR"
+			property="positionDes" />
+		<result column="online" jdbcType="BIT" property="online" />
+		<result column="online_time" jdbcType="TIMESTAMP"
+			property="onlineTime" />
+		<result column="offline_time" jdbcType="TIMESTAMP"
+			property="offlineTime" />
+		<result column="device_version" jdbcType="VARCHAR"
+			property="deviceVersion" />
+		<result column="soft_version" jdbcType="VARCHAR"
+			property="softVersion" />
+		<result column="isFault" jdbcType="BIT" property="isfault" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+		<result column="slaveEntry" jdbcType="INTEGER"
+			property="slaveentry" />
+		<result column="slaveIDs" jdbcType="VARCHAR"
+			property="slaveids" />
+		<result column="voltage" jdbcType="REAL" property="voltage" />
+		<result column="current" jdbcType="REAL" property="current" />
+		<result column="firstLink" jdbcType="INTEGER"
+			property="firstlink" />
+		<result column="connForm" jdbcType="INTEGER"
+			property="connform" />
+		<result column="signalQuality" jdbcType="INTEGER"
+			property="signalquality" />
+		<result column="workingHours" jdbcType="BIGINT"
+			property="workinghours" />
+		<result column="restartCount" jdbcType="INTEGER"
+			property="restartcount" />
+		<result column="keepAliveInterval" jdbcType="INTEGER"
+			property="keepaliveinterval" />
+		<result column="dataUpTime" jdbcType="INTEGER"
+			property="datauptime" />
+		<result column="firstServer" jdbcType="INTEGER"
+			property="firstserver" />
+		<result column="cpuTemper" jdbcType="INTEGER" property="cputemper" />
+		<result column="ramProportion" jdbcType="INTEGER"
+			property="ramproportion" />
+		<result column="romProportion" jdbcType="INTEGER"
+			property="romproportion" />
+		<result column="cpuProportion" jdbcType="INTEGER"
+			property="cpuproportion" />
+	</resultMap>
+	<resultMap id="devicesState"
+		type="cn.ritac.mmbs.mybatis.model.DevicesState">
+		<result column="uid" jdbcType="INTEGER" property="uid" />
+		<result column="num" jdbcType="INTEGER" property="num" />
+		<result column="onnum" jdbcType="INTEGER" property="onnum" />
+		<result column="offnum" jdbcType="INTEGER" property="offnum" />
+	</resultMap>
+
+	<select id="getDevice" resultMap="BaseResultMap">
+
+		select * from mmbs_devices
+		where device_num=#{deviceNum} and
+		device_key=#{key}
+
+	</select>
+<!-- 更新新增在线设备数据库状态 -->
+	<update id="saveStatusOnLine">
+		update mmbs_devices SET online=1,online_time= #{nowTime}
+		<if test="slaveId!=''">
+			,slaveIDs=#{slaveId}
+		</if>
+		where device_num = #{device_id}
+	</update>
+
+	<!-- 更新新增离线设备数据库状态 -->
+	<update id="saveStatusUnOnLine">
+		update mmbs_devices set online=0 ,offline_time=#{nowTime}
+		<if test="slaveId!=''">
+			,slaveIDs=#{slaveId}
+		</if>
+		where device_num = #{device_id}
+	</update>
+	
+	<select id="getUserDevicesState" resultMap="devicesState">
+		SELECT * FROM v_devices_state_user_bind vcs
+		<where>
+			vcs.uid = #{uid}
+		</where>
+	</select>
+	<delete id="delBindUserDev">
+		DELETE FROM mmbs_user_devices_bind where device_id =
+		#{device_id}
+	</delete>
+
+	<select id="findDeviceOfGroup" resultMap="BaseResultMap">
+		SELECT
+		md.*
+		FROM
+		mmbs_devices md
+		INNER JOIN mmbs_group_device mgd on mgd.device_id =
+		md.id
+		WHERE mgd.group_id = #{groupId}
+	</select>
+
+	<select id="findDeviceOfRole" resultMap="BaseResultMap">
+		SELECT
+		DISTINCT
+		md.*
+		FROM
+		mmbs_devices md
+		INNER JOIN mmbs_role_device rd on rd.device_id =
+		md.id
+		INNER JOIN mmbs_role_group mgd on mgd.role_id = rd.role_id and
+		rd.group_id = mgd.group_id
+		WHERE
+		1=1
+		<if test="groupId != null and groupId != '' ">
+			AND mgd.group_id = #{groupId}
+		</if>
+		<if test="roleId != null and roleId != '' ">
+			AND rd.role_id = #{roleId}
+		</if>
+
+	</select>
+
+
+	<select id="deviceProporList"
+		resultType="cn.ritac.mmbs.web.dto.convert.ProporVO">
+			SELECT
+				 CASE dev.online WHEN 0 THEN '离线' ELSE (
+				 CASE dev.online WHEN 1 THEN '在线' ELSE'' END
+				) END name
+				,COUNT(1) value
+				,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per 
+			FROM mmbs_devices dev
+			INNER JOIN (
+			 SELECT COUNT(1) num FROM mmbs_devices
+			) s on 1=1
+			GROUP BY dev.online
+			UNION
+			SELECT 
+				k.name
+				,COUNT(1) value
+				,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per 
+			FROM(
+					SELECT
+							t.device_id,
+							'告警' name
+					FROM mmbs_devices_event_rec t 
+					INNER JOIN mmbs_devices d on d.id = t.device_id
+					WHERE t.create_time 
+					BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) 
+					AND NOW()
+					GROUP BY t.device_id
+			)k
+			INNER JOIN (
+			 SELECT COUNT(1) num FROM mmbs_devices
+			) s on 1=1
+	</select>
+	
+	<select id="eventProporList" resultType="cn.ritac.mmbs.web.dto.convert.ProporVO">
+		SELECT 
+			 k.name
+			,COUNT(1) value
+			,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per
+		FROM(
+			SELECT
+				 evn.create_time
+				,evn.device_id
+				,evn.event_info
+				,p.param_name
+				,CASE p.param_name WHEN 0 THEN '告警事件' ELSE(
+					CASE p.param_name WHEN 1 THEN '警告事件' ELSE(
+					CASE p.param_name WHEN 2 THEN '提醒事件' ELSE '' END
+					)END
+				)END name
+			FROM mmbs_params p
+			INNER JOIN mmbs_devices_event_rec evn on p.param_key = evn.event_info 
+			WHERE p.param_col = 'eventType'
+			  AND evn.create_time
+				BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) 
+				AND NOW()
+			GROUP BY evn.event_info ,evn.device_id
+		) k
+		INNER JOIN (SELECT COUNT(1) num FROM mmbs_devices_event_rec 
+			WHERE create_time
+			BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) AND NOW()
+		) s on 1=1
+		GROUP BY k.param_name
+	</select>
+	
+	<select id="evenList" resultType="cn.ritac.mmbs.web.dto.convert.EventVO">
+		SELECT k.* FROM (
+			SELECT
+			     der.id
+				,d.device_num
+				,p.param_value event_name
+				,p.param_descript event_descript
+				,der.create_time
+			FROM mmbs_params p
+			INNER JOIN mmbs_devices_event_rec der on der.event_info = p.param_key
+			INNER JOIN mmbs_devices d on d.id = der.device_id
+			WHERE param_col= 'eventType' AND  <![CDATA[ param_key < 9 ]]>
+			UNION
+			SELECT
+			      der.id
+				,d.device_num
+				,p.param_value event_name
+				,p.param_descript event_descript
+				,der.create_time
+			FROM mmbs_params p 
+			INNER JOIN mmbs_devices_event_rec der on der.event_info = p.param_key AND der.event_content = p.param_level
+			INNER JOIN mmbs_devices d on d.id = der.device_id
+			WHERE p.param_col= 'eventType' AND p.param_key = 9
+			) k ORDER BY k.create_time DESC
+	</select>
+	
+</mapper>

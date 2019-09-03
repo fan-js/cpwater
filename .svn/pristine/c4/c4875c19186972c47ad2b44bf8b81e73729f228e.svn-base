@@ -1,0 +1,35 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public class KeyValue {
+	private int addr;
+	private Object value;
+	private Object val;
+
+	public Object getVal() {
+		return val;
+	}
+
+	public void setVal(Object val) {
+		this.val = val;
+	}
+
+	public int getAddr() {
+		return addr;
+	}
+
+	public void setAddr(int addr) {
+		this.addr = addr;
+	}
+
+	public Object getValue() {
+		return value;
+	}
+
+	public void setValue(float value) {
+		this.value = value;
+	}
+
+	public void setValue(Object value) {
+		this.value = value;
+	}
+}

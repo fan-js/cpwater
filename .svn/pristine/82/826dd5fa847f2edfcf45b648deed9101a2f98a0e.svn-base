@@ -1,0 +1,10 @@
+package cn.ritac.mmbs.service;
+
+import java.util.List;
+
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.web.dto.convert.AiVO;
+
+public interface DevicesAIService extends BaseService<DevicesAI, Integer> {
+	public List<AiVO> getDeviceAiCharts(int id);
+}

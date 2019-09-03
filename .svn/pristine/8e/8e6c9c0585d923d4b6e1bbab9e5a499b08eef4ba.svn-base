@@ -1,0 +1,49 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> MQTTDeviceConfigClientUp
+ *<br><b>CreatTime:</b> 2019年5月22日下午4:23:30
+ */
+public class MQTTDeviceConfigClientUp extends MQTTDeviceBase {
+	private String deviceKey;
+	private String time;
+	private int msgType;
+	private MQTTDeviceConfigClientUpMsgData msgData;
+	
+	public String getDeviceKey() {
+		return deviceKey;
+	}
+	public void setDeviceKey(String deviceKey) {
+		this.deviceKey = deviceKey;
+	}
+
+	public String getTime() {
+		return time;
+	}
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public int getMsgType() {
+		return msgType;
+	}
+	public void setMsgType(int msgType) {
+		this.msgType = msgType;
+	}
+
+	public MQTTDeviceConfigClientUpMsgData getMsgData() {
+		return msgData;
+	}
+	public void setMsgData(MQTTDeviceConfigClientUpMsgData msgData) {
+		this.msgData = msgData;
+	}
+
+
+	
+
+
+}

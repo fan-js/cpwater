@@ -1,0 +1,72 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.web.dto;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> voltnetPojo
+ *<br><b>CreatTime:</b> 2019年5月14日下午5:56:48
+ */
+public class voltnetPojo {
+	private String date;
+	private int sum;
+	private Long electric;
+	private float elePer;
+	private Long net;
+	private float netPer;
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public int getSum() {
+		return sum;
+	}
+
+	public void setSum(int sum) {
+		this.sum = sum;
+	}
+
+	public Long getElectric() {
+		return electric;
+	}
+
+	public void setElectric(Long electric) {
+		this.electric = electric;
+	}
+
+	public float getElePer() {
+		return elePer;
+	}
+
+	public void setElePer(float elePer) {
+		this.elePer = elePer;
+	}
+
+	public Long getNet() {
+		return net;
+	}
+
+	public void setNet(Long net) {
+		this.net = net;
+	}
+
+	public float getNetPer() {
+		return netPer;
+	}
+
+	public void setNetPer(float netPer) {
+		this.netPer = netPer;
+	}
+
+}

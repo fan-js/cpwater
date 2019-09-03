@@ -1,0 +1,11 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.GroupDevice;
+
+public interface GroupDeviceService extends BaseService<GroupDevice, Integer> {
+
+	public void deleteByCol(int groupId);
+
+	public void deleteByObj(GroupDevice gd);
+
+}

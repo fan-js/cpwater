@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.service;
+
+
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+
+public interface DevicesEventRecService extends BaseService<DevicesEventRec,Integer>  {
+
+}

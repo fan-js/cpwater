@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.Devices">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_num" jdbcType="VARCHAR" property="deviceNum" />
+    <result column="deviceKey" jdbcType="VARCHAR" property="key" />
+    <result column="device_model" jdbcType="VARCHAR" property="deviceModel" />
+    <result column="lon" jdbcType="VARCHAR" property="lon" />
+    <result column="lat" jdbcType="VARCHAR" property="lat" />
+    <result column="position_des" jdbcType="VARCHAR" property="positionDes" />
+    <result column="online" jdbcType="BIT" property="online" />
+    <result column="online_time" jdbcType="TIMESTAMP" property="onlineTime" />
+    <result column="offline_time" jdbcType="TIMESTAMP" property="offlineTime" />
+    <result column="signal" jdbcType="INTEGER" property="signal" />
+    <result column="device_version" jdbcType="VARCHAR" property="deviceVersion" />
+    <result column="soft_version" jdbcType="VARCHAR" property="softVersion" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  
+  <select id="getDevice" resultMap="BaseResultMap">
+  
+  select * from mmbs_devices  where device_num=#{deviceNum} and device_key=#{key}
+  
+  </select>
+  
+  <update id="saveStatusOnLine" >
+  
+   UPDATE mmbs_devices SET online=1,update_time=NOW() where device_num in 
+   
+    <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+          #{item}
+    </foreach>
+
+  
+  </update>
+    <update id="saveStatusUnOnLine" >
+  
+  update mmbs_devices set online=0 where device_num not  in 
+  
+   <foreach collection="array" index="index" item="item" open="(" separator="," close=")">
+          #{item}
+    </foreach>
+  
+  </update>
+  
+</mapper>

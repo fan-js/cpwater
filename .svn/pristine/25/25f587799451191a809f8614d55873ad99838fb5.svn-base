@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.UserRolesBind;
+
+
+public interface RolesService  extends BaseService<UserRolesBind,Integer>  {
+
+}

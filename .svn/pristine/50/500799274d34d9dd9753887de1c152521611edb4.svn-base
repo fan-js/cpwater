@@ -1,0 +1,15 @@
+package cn.ritac.mmbs.service;
+
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesDoRec;
+import cn.ritac.mmbs.mybatis.model.VDevicesDoRecList;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+
+public interface DevicesDoRecService extends BaseService<DevicesDoRec,Integer> {
+
+
+	public PageInfo<VDevicesDoRecList> getDeviceDoRecord( String beginTime,
+			String endTime, String userTel, String deviceNum,int pageIndex,int pageSize);
+}

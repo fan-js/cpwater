@@ -1,0 +1,83 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.web.dto.convert;
+
+import java.util.Date;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> AiVO
+ *<br><b>CreatTime:</b> 2019年4月29日上午11:57:04
+ */
+public class AiVO {
+	private Date time;
+	private float vol;
+	private float cur;
+	private float leakCur;
+	private float temp;
+	private float hum;
+	private float ill;
+
+	public Date getTime() {
+		return time;
+	}
+
+	public void setTime(Date time) {
+		this.time = time;
+	}
+
+	public float getVol() {
+		return vol;
+	}
+
+	public void setVol(float vol) {
+		this.vol = vol;
+	}
+
+	public float getCur() {
+		return cur;
+	}
+
+	public void setCur(float cur) {
+		this.cur = cur;
+	}
+
+	public float getLeakCur() {
+		return leakCur;
+	}
+
+	public void setLeakCur(float leakCur) {
+		this.leakCur = leakCur;
+	}
+
+	public float getTemp() {
+		return temp;
+	}
+
+	public void setTemp(float temp) {
+		this.temp = temp;
+	}
+
+	public float getHum() {
+		return hum;
+	}
+
+	public void setHum(float hum) {
+		this.hum = hum;
+	}
+
+	public float getIll() {
+		return ill;
+	}
+
+	public void setIll(float ill) {
+		this.ill = ill;
+	}
+
+}

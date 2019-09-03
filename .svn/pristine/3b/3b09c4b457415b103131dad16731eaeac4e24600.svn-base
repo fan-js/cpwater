@@ -1,0 +1,46 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+/*
+ * 控制命令下发流程
+ */
+public class MQTTDeviceControlSend extends MQTTDeviceBase {
+	
+
+
+	public String getDeviceKey() {
+		return deviceKey;
+	}
+	public void setDeviceKey(String deviceKey) {
+		this.deviceKey = deviceKey;
+	}
+	public String getTime() {
+		return time;
+	}
+	public void setTime(String time) {
+		this.time = time;
+	}
+	public int getMsgType() {
+		return msgType;
+	}
+	public void setMsgType(int msgType) {
+		this.msgType = msgType;
+	}
+	public KeyValue getMsgData() {
+		return msgData;
+	}
+	public void setMsgData(KeyValue msgData) {
+		this.msgData = msgData;
+	}
+	private String deviceId;
+	public String getDeviceId() {
+		return deviceId;
+	}
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+	private String deviceKey;
+	private String time;
+	private int msgType;
+	private KeyValue msgData;
+
+}

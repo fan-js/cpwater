@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.AdminMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.Admin">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="admin_name" jdbcType="VARCHAR"
+			property="adminName" />
+		<result column="user_phone" jdbcType="VARCHAR"
+			property="userPhone" />
+		<result column="admin_descript" jdbcType="VARCHAR"
+			property="adminDescript" />
+		<result column="role_name" jdbcType="VARCHAR"
+			property="roleName" />
+	    <result column="userName" jdbcType="VARCHAR"
+			property="userName" />
+	</resultMap>
+
+
+	<select id="findListByObj" resultMap="BaseResultMap">
+		SELECT
+			an.* ,
+			ros.role_name
+			,u.user_account userName
+		FROM mmbs_admin an
+		INNER JOIN mmbs_role_admin
+		ran on ran.admin_id = an.id
+		INNER JOIN mmbs_roles ros on ros.id =
+		ran.role_id
+		INNER JOIN mmbs_users u ON u.telephone = an.user_phone
+		WHERE 1=1
+		<if test="userPhone!=null  and userPhone !=''">
+			AND an.user_phone = #{userPhone}
+		</if>
+		<if test="adminName!=null  and adminName !=''">
+			AND an.admin_name LIKE CONCAT(#{adminName},'%')
+		</if>
+		<if test="adminDescript!=null  and adminDescript !=''">
+			AND an.admin_descript LIKE
+			CONCAT('%',#{adminDescript},'%')
+		</if>
+		GROUP BY an.id
+	</select>
+</mapper>

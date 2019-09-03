@@ -1,0 +1,46 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.UsersMapper;
+import cn.ritac.mmbs.mybatis.model.Users;
+import cn.ritac.mmbs.service.BaseService;
+import cn.ritac.mmbs.service.UsersService;
+import tk.mybatis.mapper.common.Mapper;
+
+/**
+ * 用户业务处理
+ * @author chenfang
+ *
+ */
+@Service
+public class UsersServiceImpl  extends BaseServiceImpl<Users> implements UsersService {
+	
+	@Autowired
+	private UsersMapper usersMapper;
+	
+	
+	@Autowired
+	public void setInit(Mapper<Users> mapper) {
+		super.setInit(mapper);
+	}
+
+
+	/**
+	 * 得到用户
+	 */
+	@Override
+	public PageInfo<Users> getUsers(String telephone, int pageSize, int pageIndex) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<Users> list=usersMapper.getUsers(telephone);
+		
+		return new PageInfo<>(list);
+	}
+	
+}

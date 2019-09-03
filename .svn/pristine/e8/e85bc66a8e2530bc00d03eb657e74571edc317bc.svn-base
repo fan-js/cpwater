@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.comm;
+
+public enum MessageTemplateTypeEnum {
+//	注册模板
+	RegisterTemplate,
+//	重置密码模板
+	ResetTemplate,
+}

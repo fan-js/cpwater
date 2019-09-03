@@ -1,0 +1,17 @@
+#激活模式
+#spring.profiles.active=dev
+spring.profiles.active=pro
+
+#mqtt config
+MQTT.Server.Host = tcp://120.27.213.48:1883
+MQTT.Server.Topic = RITAC/OUT/IVMB/V1/#
+MQTT.Server.Qos = 2
+MQTT.Server.UserName = admin
+MQTT.Server.PassWord = public
+
+tomcat.max-threads = 128
+tomcat.min-spare-threads = 5
+tomcat.uri-encoding = UTF-8
+#shiro 报错修改的地方
+#max-connections: 200000
+#max-http-post-size: 9000000

@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+
+public interface DevicesDOService extends BaseService<DevicesDo,Integer> {
+
+	public DevicesDo queryDeviceDoByDeviceId(int deviceId); 
+}

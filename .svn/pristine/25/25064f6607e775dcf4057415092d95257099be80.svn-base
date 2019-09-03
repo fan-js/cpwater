@@ -1,0 +1,21 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public class MQTTDeviceConfigClientUpMsgDataParams {
+	public int getRegEntry() {
+		return regEntry;
+	}
+	public void setRegEntry(int regEntry) {
+		this.regEntry = regEntry;
+	}
+
+	private int regEntry;
+	
+	private String[] reg;
+
+	public String[] getReg() {
+		return reg;
+	}
+	public void setReg(String[] reg) {
+		this.reg = reg;
+	}
+}

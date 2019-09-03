@@ -1,0 +1,28 @@
+package cn.ritac.mmbs.comm;
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
+
+import cn.ritac.mmbs.comm.mqtt.ServerMQTT;
+
+@Configuration
+public class SpringInit implements ApplicationListener<ContextRefreshedEvent> {
+	@Autowired
+	private ServerMQTT serverMQTT;
+	@Override
+	public void onApplicationEvent(ContextRefreshedEvent event) {
+		try {
+			serverMQTT.connect();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+}

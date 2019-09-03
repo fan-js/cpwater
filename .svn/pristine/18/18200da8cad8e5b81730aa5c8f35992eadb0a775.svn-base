@@ -1,0 +1,18 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public class MsgDataEventInfo {
+	public int getEvent_sn() {
+		return event_sn;
+	}
+	public void setEvent_sn(int event_sn) {
+		this.event_sn = event_sn;
+	}
+	public String getEvent_time() {
+		return event_time;
+	}
+	public void setEvent_time(String event_time) {
+		this.event_time = event_time;
+	}
+	private int event_sn;
+	private String event_time;
+}

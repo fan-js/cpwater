@@ -1,0 +1,43 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesEventRecMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.mybatis.model.VDeviceEventREC;
+import cn.ritac.mmbs.mybatis.model.VDevicesRegRecList;
+import cn.ritac.mmbs.service.DevicesDIService;
+import cn.ritac.mmbs.service.DevicesEventRecService;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+
+@Service
+public class DevicesEventRecServiceImpl  extends BaseServiceImpl<DevicesEventRec> implements DevicesEventRecService {
+
+	@Autowired
+	private DevicesEventRecMapper devicesEventRecMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesEventRecMapper);
+	}
+	@Override
+	public PageInfo<VDeviceEventREC> getDeviceEventRecord(String beginTime, String endTime, String deviceNum,
+			int pageIndex, int pageSize) {
+		
+		
+		
+		PageHelper.startPage(pageIndex, pageSize);
+		List<VDeviceEventREC> list=devicesEventRecMapper.getDeviceEventRecord(beginTime, endTime, deviceNum);
+		
+		return new PageInfo<>(list);
+		
+	
+	}
+}

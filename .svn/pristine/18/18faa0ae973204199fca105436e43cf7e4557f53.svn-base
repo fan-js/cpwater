@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="cn.ritac.mmbs.mybatis.mapper.DeviceFuctionMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.DeviceFuction">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="list_device" jdbcType="BIT"
+			property="listDevice" />
+		<result column="add_device" jdbcType="BIT" property="addDevice" />
+		<result column="update_device" jdbcType="BIT"
+			property="updateDevice" />
+		<result column="del_device" jdbcType="BIT" property="delDevice" />
+		<result column="param_device" jdbcType="BIT"
+			property="paramDevice" />
+		<result column="update_time" jdbcType="TIMESTAMP"
+			property="updateTime" />
+	</resultMap>
+
+	<select id="findDeviceFunctionByRoleId"
+		resultMap="BaseResultMap">
+		SELECT
+		af.*
+		FROM mmbs_device_fuction af
+		INNER JOIN
+		mmbs_role_device_fuction raf on raf.device_fuction_id = af.id
+		WHERE
+		raf.role_id = #{roleId}
+		GROUP BY af.update_time DESC LIMIT 1
+	</select>
+</mapper>

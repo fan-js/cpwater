@@ -1,0 +1,13 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import cn.ritac.mmbs.mybatis.model.Roles;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface RolesMapper extends Mapper<Roles> {
+
+	public Roles findRoleForUser(String phone);
+
+	public List<Roles> findRoleForAdmin(int id);
+}

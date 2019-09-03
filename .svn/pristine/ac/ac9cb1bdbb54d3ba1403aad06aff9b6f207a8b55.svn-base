@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+
+public interface DevicesRegService  extends BaseService<DevicesReg,Integer>{
+
+}

@@ -1,0 +1,46 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.mapper.RolesMapper;
+import cn.ritac.mmbs.mybatis.model.Roles;
+import cn.ritac.mmbs.service.RolesService;
+
+/***
+ * 
+ * @author admin
+ *
+ */
+
+@Service
+public class RolesServiceImpl extends BaseServiceImpl<Roles> implements RolesService {
+
+	@Autowired
+	private RolesMapper rolesMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(rolesMapper);
+	}
+
+	@Override
+	public Roles findRoleForUser(String phone) {
+		return rolesMapper.findRoleForUser(phone);
+	}
+
+	@Override
+	public PageInfo<Roles> findRoleByObje(int pageIndex, int pageSize, Roles ros) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<Roles> list = rolesMapper.select(ros);
+		return new PageInfo<>(list);
+	}
+
+	@Override
+	public List<Roles> findRoleForAdmin(int id) {
+		return rolesMapper.findRoleForAdmin(id);
+	}
+}

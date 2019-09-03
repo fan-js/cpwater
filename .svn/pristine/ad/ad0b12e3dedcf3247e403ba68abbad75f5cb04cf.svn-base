@@ -1,0 +1,433 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesAIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesEventRecMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.mapper.WorkingHourMapper;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.mybatis.model.WorkingHour;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.util.DateTime;
+import cn.ritac.mmbs.util.NumberTools;
+import cn.ritac.mmbs.web.dto.ContVoltnetPojo;
+import cn.ritac.mmbs.web.dto.EventDto;
+import cn.ritac.mmbs.web.dto.voltnetPojo;
+import cn.ritac.mmbs.web.dto.convert.AiDiDoutVO;
+import cn.ritac.mmbs.web.dto.convert.AiVO;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import cn.ritac.mmbs.web.dto.convert.ProporVO;
+
+/**
+ * 设备
+ * 
+ * @author admin
+ *
+ */
+@Service
+public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements DevicesService {
+
+	@Autowired
+	private DevicesMapper devicesMapper;
+
+	@Autowired
+	private DevicesAIMapper devicesAIMapper;
+
+	@Autowired
+	private DevicesDIMapper devicesDIMapper;
+
+	@Autowired
+	private DevicesDoMapper devicesDOMapper;
+
+	@Autowired
+	private WorkingHourMapper workingHourMapper;
+
+	@Autowired
+	private DevicesEventRecMapper devicesEventRecMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesMapper);
+	}
+
+	@Override
+	public PageInfo<Devices> getDevices(String deviceNum, int pageIndex, int pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+
+		Devices deviceInfo = new Devices();
+
+		if (deviceNum != null && deviceNum != "") {
+			deviceInfo.setDeviceNum(deviceNum);
+		}
+
+		List<Devices> list = devicesMapper.select(deviceInfo);
+
+		return new PageInfo<>(list);
+	}
+
+	@Override
+	public void delBindUserDev(int device_id) {
+		devicesMapper.delBindUserDev(device_id);
+
+	}
+
+	@Override
+	public DevicesState getUserDevicesState(int uid) {
+		return devicesMapper.getUserDevicesState(uid);
+	}
+
+	@Override
+	public List<Devices> findDeviceOfGroup(int groupId) {
+		return devicesMapper.findDeviceOfGroup(groupId);
+	}
+
+	@Override
+	public List<Devices> findDeviceOfRole(Integer groupId, Integer roleId) {
+		return devicesMapper.findDeviceOfRole(groupId, roleId);
+	}
+
+	@Override
+	public List<ProporVO> deviceProporList() {
+		return devicesMapper.deviceProporList();
+	}
+
+	@Override
+	public List<ProporVO> eventProporList() {
+		return devicesMapper.eventProporList();
+	}
+
+	@Override
+	public PageInfo<EventVO> findEventList(EventDto eventDto) {
+		PageHelper.startPage(eventDto.getPageIndex(), eventDto.getPageSize());
+		List<EventVO> list = devicesMapper.evenList(eventDto);
+		return new PageInfo<>(list);
+	}
+
+	@Override
+	public Map<String, Object> sendAi(int id) {
+		DevicesAI dai = new DevicesAI();
+		dai.setDeviceId(id);
+		DevicesAI aiObj = devicesAIMapper.selectOne(dai);
+		Map<String, Object> aiMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(aiObj)) {
+			List<AiDiDoutVO> aiList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO ai = new AiDiDoutVO();
+			ai.setName("温度");
+			ai.setValue(aiObj.getTemper());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("湿度");
+			ai.setValue(aiObj.getHumidity());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("照度");
+			ai.setValue(NumberTools.doFormat(aiObj.getIlluminance() / 1000, "#.0"));
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("电压");
+			ai.setValue(aiObj.getVoltage());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("电流");
+			ai.setValue(aiObj.getCurrent());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("漏电流");
+			ai.setValue(aiObj.getCurrentLeakagelimit());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS电压");
+			ai.setValue(aiObj.getUpsVoltage());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS充放电流");
+			ai.setValue(aiObj.getCurrent());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS剩余容量：毫安时");
+			ai.setValue(NumberTools.doFormat(aiObj.getUpsSurpluscapacityMa() / 1000, "#.0"));
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS剩余容量：百分比");
+			ai.setValue(aiObj.getUpsSurpluscapacityPer());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS最高温度");
+			ai.setValue(aiObj.getUpsUppertemper());
+			aiList.add(ai);
+
+			ai = new AiDiDoutVO();
+			ai.setName("UPS最低温度");
+			ai.setValue(aiObj.getUpsLowertemper());
+			aiList.add(ai);
+
+			aiMap.put("ain", aiList);
+		}
+		return aiMap;
+	}
+
+	@Override
+	public Map<String, Object> sendDi(int id) {
+
+		DevicesDI ddi = new DevicesDI();
+		ddi.setDeviceId(id);
+		DevicesDI doutObj = devicesDIMapper.selectOne(ddi);
+		Map<String, Object> diMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(doutObj)) {
+			List<AiDiDoutVO> diList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO di = new AiDiDoutVO();
+			boolean isType = doutObj.getMainPowerStatus();
+			di.setName("电源状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "市电" : "UPS");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getDoorStatus();
+			di.setName("柜门状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "开启" : "关闭");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getUpsStatus();
+			di.setName("UPS状态 ");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "存在" : "不存在");
+			diList.add(di);
+
+			di = new AiDiDoutVO();
+			isType = doutObj.getProtectStatus();
+			di.setName("浪涌保护器状态");
+			di.setValue(isType == true ? 1 : 0);
+			di.setDescript(isType == true ? "已动作" : "未动作");
+			diList.add(di);
+
+			diMap.put("din", diList);
+		}
+
+		return diMap;
+	}
+
+	@Override
+	public Map<String, Object> sendDo(int id) {
+		DevicesDo dout = new DevicesDo();
+		dout.setDeviceId(id);
+		DevicesDo doutObj = devicesDOMapper.selectOne(dout);
+		Map<String, Object> doutMap = new HashMap<String, Object>();
+		if (!StringUtils.isEmpty(doutObj)) {
+			List<AiDiDoutVO> doutList = new ArrayList<AiDiDoutVO>();
+			AiDiDoutVO dot = new AiDiDoutVO();
+			dot.setName("电磁锁状态");
+			dot.setValue(doutObj.getElecLock().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("照明灯");
+			dot.setValue(doutObj.getLight().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("蜂鸣器 ");
+			dot.setValue(doutObj.getBeep().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("风扇 ");
+			dot.setValue(doutObj.getFan().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("加热器 ");
+			dot.setValue(doutObj.getHeating().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("自动重合闸状态");
+			dot.setValue(doutObj.getReclosState().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("报警器消音");
+			dot.setValue(doutObj.getWaringSilencing().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("ONU");
+			dot.setValue(doutObj.getRelayState_1().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("交换机");
+			dot.setValue(doutObj.getRelayState_2().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("摄相机1");
+			dot.setValue(doutObj.getRelayState_3().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("摄相机2");
+			dot.setValue(doutObj.getRelayState_4().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("备用1");
+			dot.setValue(doutObj.getRelayState_5().toString());
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("备用2");
+			dot.setValue(doutObj.getRelayState_6().toString());
+			doutList.add(dot);
+
+			doutMap.put("dout", doutList);
+		}
+		return doutMap;
+	}
+
+	@Override
+	public Map<String, Object> sendCharts(int id) {
+		Map<String, Object> chartsMap = new HashMap<String, Object>();
+		List<AiVO> aiChartsList = devicesAIMapper.getDeviceAiCharts(id);
+		chartsMap.put("charts", aiChartsList);
+		return chartsMap;
+	}
+
+	@Override
+	public List<voltnetPojo> voltnetPropor(Integer id, Integer parm_year, Integer parm_month) {
+		WorkingHour wh = new WorkingHour();
+		Date d = new Date();
+		if (!StringUtils.isEmpty(id))
+			wh.setDeviceId(id);
+		if (!StringUtils.isEmpty(parm_year) && !StringUtils.isEmpty(parm_month)) {
+			wh.setYears(parm_year);
+			wh.setMonths(parm_month);
+		} else if (!StringUtils.isEmpty(parm_year)) {
+			wh.setYears(parm_year);
+		} else if (!StringUtils.isEmpty(parm_month)) {
+			wh.setMonths(parm_month);
+		} else {
+			wh.setYears(DateTime.getYear(d));
+			wh.setMonths(DateTime.getMonth(d));
+		}
+		List<WorkingHour> whList = workingHourMapper.select(wh);
+		List<voltnetPojo> resList = new ArrayList<voltnetPojo>();
+		if (!StringUtils.isEmpty(whList)) {
+			for (WorkingHour w : whList) {
+				int dev_id = w.getDeviceId();
+				String devNum = "";
+				Devices deb = devicesMapper.selectByPrimaryKey(dev_id);
+				if (!StringUtils.isEmpty(deb) && !StringUtils.isEmpty(deb.getDeviceNum()))
+					devNum = deb.getDeviceNum();
+				// 总时长
+				DecimalFormat df = new DecimalFormat("#.000");
+				int tmp = w.getMinutes().intValue();
+				int sum = whList.size() > 0 ? tmp == 0 ? 1 : tmp : 1;
+				voltnetPojo vp = new voltnetPojo();
+				vp.setDevNum(devNum);
+				int month = w.getMonths();
+				vp.setDate(String.valueOf(month));
+
+				// 市电
+				Long volt = w.getWorkinghours();
+				volt = volt == null ? 0 : volt;
+				vp.setElectric(volt);
+				float vper = Float.parseFloat(String.valueOf(volt)) / sum;
+				vp.setElePer(Float.valueOf(df.format(vper)));
+				// ups
+				Long ups_volt = w.getHours();
+				ups_volt = ups_volt == null ? 0 : ups_volt;
+				vp.setUps_electric(ups_volt);
+				float ups_vper = Float.parseFloat(String.valueOf(ups_volt)) / sum;
+				vp.setUps_elePer(ups_vper);
+
+				// 有线网
+				Long net = w.getNetworkinghours();
+				net = net == null ? 0 : net;
+				vp.setNet(net);
+				float nper = Float.parseFloat(String.valueOf(net)) / sum;
+				vp.setNetPer(Float.valueOf(df.format(nper)));
+				// 无线网
+				Long moblie_net = w.getNetHours();
+				moblie_net = moblie_net == null ? 0 : moblie_net;
+				vp.setMobile_net(moblie_net);
+				float moblie_nper = Float.parseFloat(String.valueOf(moblie_net)) / sum;
+				vp.setMobile_netPer(moblie_nper);
+
+				vp.setSum(sum);
+				resList.add(vp);
+			}
+		}
+		return resList;
+	}
+
+	@Override
+	public List<Devices> findAllNotInGroup() {
+		return devicesMapper.findAllNotInGroup();
+	}
+
+	@Override
+	public List<EventVO> get_eventList(Integer id,String eventName,String devNum) {
+		return devicesEventRecMapper.get_eventList(id, eventName, devNum);
+	}
+
+	@Override
+	public List<AiDiDoutVO> get_eventTypeOfgroup() {
+		return devicesEventRecMapper.get_eventTypeOfgroup();
+	}
+
+	@Override
+	public List<AiDiDoutVO> get_eventCountOfGroup() {
+		return devicesEventRecMapper.get_eventCountOfGroup();
+	}
+
+	@Override
+	public List<AiDiDoutVO> get_eventCount() {
+		return devicesEventRecMapper.get_eventCount();
+	}
+
+	@Override
+	public List<ContVoltnetPojo> countVoltnetPropor() {
+		return workingHourMapper.countVoltnetPropor();
+	}
+
+	@Override
+	public PageInfo<Devices> findDeviceByCondition(int pageIndex, int pageSize, String devNum, String devModel,
+			String devPosit, String devRemark, Boolean on_line, Integer groupId) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<Devices> list = devicesMapper.findDeviceByCondition(devNum, devModel, devPosit, devRemark, on_line,
+				groupId);
+		return new PageInfo<>(list);
+	}
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.RegCameraMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.RegCamera">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="sn" jdbcType="VARCHAR" property="sn" />
+    <result column="model" jdbcType="VARCHAR" property="model" />
+    <result column="mac" jdbcType="VARCHAR" property="mac" />
+    <result column="ip" jdbcType="VARCHAR" property="ip" />
+    <result column="state" jdbcType="VARCHAR" property="state" />
+    <result column="account" jdbcType="VARCHAR" property="account" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+  </resultMap>
+</mapper>

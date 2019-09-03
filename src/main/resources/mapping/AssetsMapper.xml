@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.cpwater.mybatis.mapper.AssetsMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.cpwater.mybatis.model.Assets">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="assets_code" jdbcType="VARCHAR" property="assetsCode" />
+    <result column="assets_name" jdbcType="VARCHAR" property="assetsName" />
+    <result column="assets_type" jdbcType="VARCHAR" property="assetsType" />
+    <result column="assets_model" jdbcType="VARCHAR" property="assetsModel" />
+    <result column="assets_source" jdbcType="VARCHAR" property="assetsSource" />
+    <result column="buy_time" jdbcType="TIMESTAMP" property="buyTime" />
+    <result column="install_time" jdbcType="TIMESTAMP" property="installTime" />
+    <result column="out_time" jdbcType="TIMESTAMP" property="outTime" />
+    <result column="assets_address" jdbcType="VARCHAR" property="assetsAddress" />
+    <result column="device_num" jdbcType="VARCHAR" property="device_num" />
+    <result column="price" jdbcType="REAL" property="price" />
+    <result column="img_url" jdbcType="VARCHAR" property="imgUrl" />
+    <result column="assets_descript" jdbcType="VARCHAR" property="descript" />
+  </resultMap>
+  
+  <resultMap  id="assetsCount" type="cn.ritac.cpwater.web.dto.convert.AssetsCount">
+     <result column="assetsNum" jdbcType="INTEGER" property="assetsNum" />
+     <result column="assetsNumPrice" jdbcType="REAL" property="assetsNumPrice" />
+     <result column="assetsUse" jdbcType="INTEGER" property="assetsUse" />
+     <result column="assetsUsePrice" jdbcType="REAL" property="assetsUsePrice" />
+     <result column="assetsUseProp" jdbcType="REAL" property="assetsUseProp" />
+     <result column="assetsFree" jdbcType="INTEGER" property="assetsFree" />
+     <result column="assetsFreePrice" jdbcType="REAL" property="assetsFreePrice" />
+     <result column="assetsFreeProp" jdbcType="REAL" property="assetsFreeProp" />
+     <result column="assetsScrap" jdbcType="INTEGER" property="assetsScrap" />
+     <result column="assetsScrapPrice" jdbcType="REAL" property="assetsScrapPrice" />
+     <result column="assetsScrapProp" jdbcType="REAL" property="assetsScrapProp" />
+  </resultMap>
+  <select id="countIfAssets" resultMap="assetsCount">
+	SELECT
+			 mast.assetsNum
+			,mast.assetsNumPrice
+			,mast.assetsUse
+			,mast.assetsUsePrice
+			,TRUNCATE(mast.assetsUse/mast.assetsNum,2)*100 assetsUseProp
+			,mast.assetsFree
+			,mast.assetsFreePrice
+			,TRUNCATE(mast.assetsFree/mast.assetsNum,2)*100 assetsFreeProp
+			,mast.assetsScrap
+			,mast.assetsScrapPrice
+			,TRUNCATE(mast.assetsScrap/mast.assetsNum,2)*100 assetsScrapProp
+		FROM(
+			SELECT
+				 SUM(CASE 1 WHEN 1 THEN 1 END) assetsNum
+				 ,SUM(CASE 1 WHEN 1 THEN price END) assetsNumPrice
+				 ,SUM(CASE assets_type WHEN '0' THEN 1 END) assetsUse
+				 ,SUM(CASE assets_type WHEN '0' THEN price END) assetsUsePrice
+				 ,SUM(CASE assets_type WHEN '1' THEN 1 END) assetsFree
+				 ,SUM(CASE assets_type WHEN '1' THEN price END) assetsFreePrice
+				 ,SUM(CASE assets_type WHEN '2' THEN 1 END) assetsScrap
+				 ,SUM(CASE assets_type WHEN '2' THEN price END) assetsScrapPrice
+			FROM cpwater_assets
+		)mast
+  </select>
+</mapper>

@@ -1,0 +1,17 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesMapper extends Mapper<Devices> {
+
+	public Devices getDevice(String deviceNum, String key);
+
+	public void saveStatusOnLine(String[] deviceNum);
+
+	public void saveStatusUnOnLine(String[] deviceNum);
+
+	public DevicesState getUserDevicesState(int uid);
+
+}

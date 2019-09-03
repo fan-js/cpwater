@@ -1,0 +1,44 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesDIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoRecMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesDoRec;
+import cn.ritac.mmbs.mybatis.model.Users;
+import cn.ritac.mmbs.mybatis.model.VDevicesDoRecList;
+import cn.ritac.mmbs.service.DevicesDIService;
+import cn.ritac.mmbs.service.DevicesDoRecService;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+
+@Service
+public class DevicesDoRecServiceImpl extends BaseServiceImpl<DevicesDoRec> implements DevicesDoRecService  {
+
+	@Autowired
+	private DevicesDoRecMapper devicesDoRecMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesDoRecMapper);
+	}
+	
+	@Override
+	public PageInfo<VDevicesDoRecList> getDeviceDoRecord(String beginTime, String endTime, String userTel,
+			String deviceNum, int pageIndex, int pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<VDevicesDoRecList> list=devicesDoRecMapper.getDeviceDORecord(beginTime, endTime, userTel, deviceNum);
+		
+		return new PageInfo<>(list);
+	}
+	
+	
+
+	
+}

@@ -1,0 +1,276 @@
+package cn.ritac.mmbs.mybatis.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.*;
+
+@Table(name = "mmbs_devices")
+public class Devices implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
+    private Integer id;
+
+    @Column(name = "device_num")
+    private String deviceNum;
+
+    @Column(name = "device_key")
+    private String deviceKey;
+
+    @Column(name = "device_model")
+    private String deviceModel;
+
+    private String lon;
+
+    private String lat;
+
+    @Column(name = "position_des")
+    private String positionDes;
+
+    private Boolean online;
+
+    @Column(name = "online_time")
+    private Date onlineTime;
+
+    @Column(name = "offline_time")
+    private Date offlineTime;
+
+
+    @Column(name = "signals")
+    private Integer signal;
+
+    @Column(name = "device_version")
+    private String deviceVersion;
+
+    @Column(name = "soft_version")
+    private String softVersion;
+
+    private String remark;
+
+    @Column(name = "create_time")
+    private Date createTime;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @return id
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * @return device_num
+     */
+    public String getDeviceNum() {
+        return deviceNum;
+    }
+
+    /**
+     * @param deviceNum
+     */
+    public void setDeviceNum(String deviceNum) {
+        this.deviceNum = deviceNum == null ? null : deviceNum.trim();
+    }
+
+
+
+    public String getDeviceKey() {
+		return deviceKey;
+	}
+
+	public void setDeviceKey(String deviceKey) {
+		this.deviceKey = deviceKey;
+	}
+
+	/**
+     * @return device_model
+     */
+    public String getDeviceModel() {
+        return deviceModel;
+    }
+
+    /**
+     * @param deviceModel
+     */
+    public void setDeviceModel(String deviceModel) {
+        this.deviceModel = deviceModel == null ? null : deviceModel.trim();
+    }
+
+    /**
+     * @return lon
+     */
+    public String getLon() {
+        return lon;
+    }
+
+    /**
+     * @param lon
+     */
+    public void setLon(String lon) {
+        this.lon = lon == null ? null : lon.trim();
+    }
+
+    /**
+     * @return lat
+     */
+    public String getLat() {
+        return lat;
+    }
+
+    /**
+     * @param lat
+     */
+    public void setLat(String lat) {
+        this.lat = lat == null ? null : lat.trim();
+    }
+
+    /**
+     * @return position_des
+     */
+    public String getPositionDes() {
+        return positionDes;
+    }
+
+    /**
+     * @param positionDes
+     */
+    public void setPositionDes(String positionDes) {
+        this.positionDes = positionDes == null ? null : positionDes.trim();
+    }
+
+    /**
+     * @return online
+     */
+    public Boolean getOnline() {
+        return online;
+    }
+
+    /**
+     * @param online
+     */
+    public void setOnline(Boolean online) {
+        this.online = online;
+    }
+
+    /**
+     * @return online_time
+     */
+    public Date getOnlineTime() {
+        return onlineTime;
+    }
+
+    /**
+     * @param onlineTime
+     */
+    public void setOnlineTime(Date onlineTime) {
+        this.onlineTime = onlineTime;
+    }
+
+    /**
+     * @return offline_time
+     */
+    public Date getOfflineTime() {
+        return offlineTime;
+    }
+
+    /**
+     * @param offlineTime
+     */
+    public void setOfflineTime(Date offlineTime) {
+        this.offlineTime = offlineTime;
+    }
+
+    /**
+     * @return signal
+     */
+    public Integer getSignal() {
+        return signal;
+    }
+
+    /**
+     * @param signal
+     */
+    public void setSignal(Integer signal) {
+        this.signal = signal;
+    }
+
+    /**
+     * @return device_version
+     */
+    public String getDeviceVersion() {
+        return deviceVersion;
+    }
+
+    /**
+     * @param deviceVersion
+     */
+    public void setDeviceVersion(String deviceVersion) {
+        this.deviceVersion = deviceVersion == null ? null : deviceVersion.trim();
+    }
+
+    /**
+     * @return soft_version
+     */
+    public String getSoftVersion() {
+        return softVersion;
+    }
+
+    /**
+     * @param softVersion
+     */
+    public void setSoftVersion(String softVersion) {
+        this.softVersion = softVersion == null ? null : softVersion.trim();
+    }
+
+    /**
+     * @return remark
+     */
+    public String getRemark() {
+        return remark;
+    }
+
+    /**
+     * @param remark
+     */
+    public void setRemark(String remark) {
+        this.remark = remark == null ? null : remark.trim();
+    }
+
+    /**
+     * @return create_time
+     */
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * @param createTime
+     */
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+}

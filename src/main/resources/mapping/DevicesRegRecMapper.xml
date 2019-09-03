@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.cpwater.mybatis.mapper.DevicesRegRecMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.cpwater.mybatis.model.DevicesRegRec">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="door_alarm_delaytime" jdbcType="VARCHAR" property="doorAlarmDelaytime" />
+    <result column="lighting_upperlimit" jdbcType="VARCHAR" property="lightingUpperlimit" />
+    <result column="lighting_lowerlimit" jdbcType="VARCHAR" property="lightingLowerlimit" />
+    <result column="temperature_uppperlimit" jdbcType="VARCHAR" property="temperatureUppperlimit" />
+    <result column="temperature_lowerlimit" jdbcType="VARCHAR" property="temperatureLowerlimit" />
+    <result column="voltage_upperlimit" jdbcType="VARCHAR" property="voltageUpperlimit" />
+    <result column="voltage_lowerlimit" jdbcType="VARCHAR" property="voltageLowerlimit" />
+    <result column="current_upperlimit" jdbcType="VARCHAR" property="currentUpperlimit" />
+    <result column="current_leakagelimit" jdbcType="VARCHAR" property="currentLeakagelimit" />
+    <result column="ups_warningvoltageupper" jdbcType="VARCHAR" property="upsWarningvoltageupper" />
+    <result column="ups_warningvoltagelower" jdbcType="VARCHAR" property="upsWarningvoltagelower" />
+    <result column="ups_warningcapacityupper" jdbcType="VARCHAR" property="upsWarningcapacityupper" />
+    <result column="ups_warningcapacitylower" jdbcType="VARCHAR" property="upsWarningcapacitylower" />
+    <result column="ups_chargeupperlimit" jdbcType="VARCHAR" property="upsChargeupperlimit" />
+    <result column="ups_chargelowerlimit" jdbcType="VARCHAR" property="upsChargelowerlimit" />
+    <result column="ups_dischargeupperlimit" jdbcType="VARCHAR" property="upsDischargeupperlimit" />
+    <result column="ups_dischargelowerlimit" jdbcType="VARCHAR" property="upsDischargelowerlimit" />
+    <result column="ups_temperatureupperlimit" jdbcType="VARCHAR" property="upsTemperatureupperlimit" />
+    <result column="ups_temperaturelowerlimit" jdbcType="VARCHAR" property="upsTemperaturelowerlimit" />
+  </resultMap>
+  
+  
+  <!-- 
+	<select id="getDeviceRegRecord" resultMap="VDevicesRegRecListResultMap">
+		select * from v_devices_reg_rec_list where 1=1<if test="beginTime!=null and beginTime!=''">AND DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s')&gt;=#{beginTime}</if>
+  		<if test="endTime!= null and endTime!=''">AND DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s')&lt;=#{endTime}</if><if test="userTel!=null and userTel!=''">and telephone=#{userTel}</if>
+  		<if test="deviceNum!=null and deviceNum!=''">and device_num=#{deviceNum}</if>
+	</select> -->
+  
+</mapper>

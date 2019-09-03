@@ -1,0 +1,101 @@
+package cn.ritac.mmbs.comm.mqtt;
+
+import java.io.Console;
+
+import javax.annotation.Resource;
+
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+
+/**
+ * Created by Administrator on 17-2-10.
+ */
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.alibaba.fastjson.JSONObject;
+import cn.ritac.mmbs.service.*;
+import cn.ritac.mmbs.service.impl.MQTTServiceImpl;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceBase;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceLogin;
+
+/**
+ *
+ * Title:Server Description: 服务器向多个客户端推送主题，即不同客户端可向服务器订阅相同主题
+ * 
+ * @author admin 2017年2月10日下午17:41:10
+ */
+
+@Component
+
+public class ServerMQTT {
+	// tcp://MQTT安装的服务器地址:MQTT定义的端口号
+	public static final String HOST = "tcp://120.27.213.48:1883";
+	//public static final String HOST = "tcp://iot.eclipse.org:1883";
+	
+	// 定义一个主题
+	public static final String TOPIC = "IVMB/V1/SIDO/#";
+	// 定义MQTT的ID，可以在MQTT服务配置中指定
+	private static final String clientid = "mmbsService";
+	private MqttClient client;
+	public MqttClient getClient() {
+		return client;
+	}
+
+	private String userName = "admin";
+	private String passWord = "public";
+	/**
+	 * 用来连接服务器
+	 * @throws MqttException 
+	 */
+	public  void connect() throws MqttException {
+		
+		client = new MqttClient(HOST, clientid, new MemoryPersistence());
+		
+		MqttConnectOptions options = new MqttConnectOptions();
+		options.setCleanSession(false);
+		options.setUserName(userName);
+		options.setPassword(passWord.toCharArray());
+		// 设置超时时间
+		options.setConnectionTimeout(10);
+		// 设置会话心跳时间
+		options.setKeepAliveInterval(20);
+		try {
+			//这里调用的回调
+			client.setCallback(new PushCallback());
+			client.connect(options);
+			client.subscribe(TOPIC);
+			// topic11 = client.getTopic(TOPIC);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 *
+	 * @param topic
+	 * @param message
+	 * @throws MqttPersistenceException
+	 * @throws MqttException
+	 */
+	public void publish(MqttTopic topic, MqttMessage message) throws MqttPersistenceException, MqttException {
+		MqttDeliveryToken token = topic.publish(message);
+	//	token.waitForCompletion();
+		System.out.println("message is published completely! " + token.isComplete());
+	}
+
+	
+}

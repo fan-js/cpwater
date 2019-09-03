@@ -1,0 +1,19 @@
+package cn.ritac.mmbs.comm.jobs;
+
+import org.springframework.stereotype.Component;
+
+@Component
+//@EnableScheduling
+public class DevicesOnLineJobs {
+	
+//	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+//	@Autowired
+//	private cn.ritac.mmbs.service.MQTTService MQTTService;
+	
+//	@Scheduled(cron="*/3 * * * * ?")
+    public void cronJob(){
+		//logger.info(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date())+" >>同步设备上线执行....");
+//        MQTTService.getDeviceStatus();
+	}
+}

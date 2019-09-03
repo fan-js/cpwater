@@ -1,0 +1,32 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.UserRoleMapper;
+import cn.ritac.mmbs.mybatis.model.UserRole;
+import cn.ritac.mmbs.service.UserRolesService;
+
+/***
+ * 
+ * @author admin
+ *
+ */
+
+@Service
+public class UserRolesImpl extends BaseServiceImpl<UserRole> implements UserRolesService {
+
+	@Autowired
+	private UserRoleMapper userRoleMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(userRoleMapper);
+	}
+
+	@Override
+	public void deleteByObj(UserRole ur) {
+		userRoleMapper.delete(ur);
+	}
+
+}

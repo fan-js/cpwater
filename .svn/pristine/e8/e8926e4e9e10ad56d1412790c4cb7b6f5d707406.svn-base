@@ -1,0 +1,17 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.mybatis.model.VDeviceEventREC;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesEventRecMapper extends Mapper<DevicesEventRec> {
+	
+	public List<VDeviceEventREC> getDeviceEventRecord (@Param("beginTime") String beginTime,
+			@Param("endTime")String endTime, 
+			 @Param("deviceNum")String deviceNum);
+}

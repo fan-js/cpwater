@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.cpwater.mybatis.mapper.DevicesDoMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.cpwater.mybatis.model.DevicesDo">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="elec_lock" jdbcType="BIT" property="elecLock" />
+    <result column="light" jdbcType="BIT" property="light" />
+    <result column="beep" jdbcType="BIT" property="beep" />
+    <result column="fan" jdbcType="BIT" property="fan" />
+    <result column="heating" jdbcType="BIT" property="heating" />
+    <result column="reclos_state" jdbcType="BIT" property="reclosState" />
+    <result column="waring_silencing" jdbcType="BIT" property="waringSilencing" />
+    <result column="1relay_state" jdbcType="BIT" property="relayState_1" />
+    <result column="2relay_state" jdbcType="BIT" property="relayState_2" />
+    <result column="3relay_state" jdbcType="BIT" property="relayState_3" />
+    <result column="4relay_state" jdbcType="BIT" property="relayState_4" />
+    <result column="5relay_state" jdbcType="BIT" property="relayState_5" />
+    <result column="6relay_state" jdbcType="BIT" property="relayState_6" />
+  </resultMap>
+  
+  <select id="queryDeviceDoByDeviceId" resultMap="BaseResultMap">
+  		select * from cpwater_devices_do where device_id=#{deviceId};
+  	</select>
+</mapper>

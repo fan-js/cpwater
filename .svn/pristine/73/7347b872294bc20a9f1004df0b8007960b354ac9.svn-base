@@ -1,0 +1,80 @@
+package cn.ritac.mmbs.comm;
+
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Random;
+
+import com.yunpian.sdk.YunpianClient;
+import com.yunpian.sdk.model.Result;
+import com.yunpian.sdk.model.SmsSingleSend;
+
+public class MessageGenerate {
+	private static String _platformName = "【xxx】";
+
+	private static Dictionary<MessageTemplateTypeEnum, String> _dicContent = new Hashtable<MessageTemplateTypeEnum, String>();
+
+	static {
+		_dicContent.put(MessageTemplateTypeEnum.RegisterTemplate, "您的验证码是{0}");
+		_dicContent.put(MessageTemplateTypeEnum.ResetTemplate, "您的验证码是{0}");
+
+	}
+
+	public static String CreateRandom() {
+		Random random = new Random();
+		String result = "";
+		for (int i = 0; i < 6; i++) {
+			result += random.nextInt(10);
+		}
+		return result;
+
+	}
+
+	/**
+	 * 发送短信
+	 * 
+	 * @param telephone
+	 * @param code
+	 * @param typeEnum
+	 * @return
+	 */
+	public static Result<SmsSingleSend> SendMsg(String telephone, String code, MessageTemplateTypeEnum typeEnum) {
+
+		YunpianClient clnt = new YunpianClient("apikey").init();
+
+		// 发送短信API
+		Map<String, String> param = clnt.newParam(2);
+		param.put(YunpianClient.MOBILE, "18616020***");
+		param.put(YunpianClient.TEXT, String.format(_platformName + _dicContent.get(typeEnum), code));
+		Result<SmsSingleSend> r = clnt.sms().single_send(param);
+
+		clnt.close();
+		return r;
+
+	}
+	
+	
+	/**
+	* 使用SDK发送单条短信,智能匹配短信模板
+	*
+	* @param apikey 成功注册后登录云片官网,进入后台可查看
+	* @param text 需要使用已审核通过的模板或者默认模板
+	* @param mobile 接收的手机号,仅支持单号码发送
+	*/
+	public static void testSendSms(String apikey, String mobile, String text) {
+	    //初始化client,apikey作为所有请求的默认值(可以为空)
+	    YunpianClient clnt = new YunpianClient("apikey").init();
+
+	    Map<String, String> param = clnt.newParam(2);
+	    param.put(YunpianClient.MOBILE, mobile);
+	    param.put(YunpianClient.TEXT, "您的验证码是1234");
+	    Result<SmsSingleSend> r = clnt.sms().single_send(param);
+	    //获取返回结果，返回码:r.getCode(),返回码描述:r.getMsg(),API结果:r.getData(),其他说明:r.getDetail(),调用异常:r.getThrowable()
+	    r.getData();
+	    //账户:clnt.user().* 签名:clnt.sign().* 模版:clnt.tpl().* 短信:clnt.sms().* 语音:clnt.voice().* 流量:clnt.flow().* 隐私通话:clnt.call().*
+
+	    //最后释放client
+	    clnt.close();
+	}
+	
+}

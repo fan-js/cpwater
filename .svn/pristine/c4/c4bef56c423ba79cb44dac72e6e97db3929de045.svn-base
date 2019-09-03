@@ -1,0 +1,8 @@
+package cn.ritac.mmbs.service;
+
+
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+
+public interface DevicesDIService extends BaseService<DevicesDI,Integer>  {
+
+}

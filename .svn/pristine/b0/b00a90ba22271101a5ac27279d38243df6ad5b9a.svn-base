@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesAIMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.DevicesAI">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="temper" jdbcType="REAL" property="temper" />
+    <result column="humidity" jdbcType="REAL" property="humidity" />
+    <result column="voltage" jdbcType="REAL" property="voltage" />
+    <result column="current" jdbcType="REAL" property="current" />
+    <result column="illuminance" jdbcType="INTEGER" property="illuminance" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+</mapper>

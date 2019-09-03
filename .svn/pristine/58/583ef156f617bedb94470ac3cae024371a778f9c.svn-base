@@ -1,0 +1,6 @@
+package cn.ritac.mmbs.web.dto;
+
+public class EventSettingDto {
+	
+	
+}

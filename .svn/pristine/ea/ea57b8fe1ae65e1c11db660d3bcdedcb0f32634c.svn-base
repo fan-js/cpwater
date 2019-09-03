@@ -1,0 +1,57 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+/**
+ * 注册返回
+ * @author chenfang
+ *
+ */
+public class MQTTDeviceLoginResult  extends MQTTDeviceBase{
+	private String deviceID;
+	private String deviceKey;
+	private int msgType;
+	private String reairectAddr;
+	private int reairectPort;
+	private int msgState;
+	
+	public String getDeviceKey() {
+		return deviceKey;
+	}
+	public void setDeviceKey(String deviceKey) {
+		this.deviceKey = deviceKey;
+	}
+	
+	public int getMsgType() {
+		return msgType;
+	}
+	public void setMsgType(int msgType) {
+		this.msgType = msgType;
+	}
+	
+	public String getReairectAddr() {
+		return reairectAddr;
+	}
+	public void setReairectAddr(String reairectAddr) {
+		this.reairectAddr = reairectAddr;
+	}
+	
+	public int getReairectPort() {
+		return reairectPort;
+	}
+	public void setReairectPort(int reairectPort) {
+		this.reairectPort = reairectPort;
+	}
+	
+	public int getMsgState() {
+		return msgState;
+	}
+	public void setMsgState(int msgState) {
+		this.msgState = msgState;
+	}
+	public String getDeviceID() {
+		return deviceID;
+	}
+	public void setDeviceID(String deviceID) {
+		this.deviceID = deviceID;
+	}
+
+}

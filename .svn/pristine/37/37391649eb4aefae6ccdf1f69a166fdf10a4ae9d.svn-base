@@ -1,0 +1,17 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+import cn.ritac.mmbs.mybatis.model.VDevicesRegRecList;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesRegMapper extends Mapper<DevicesReg> {
+
+
+
+
+}

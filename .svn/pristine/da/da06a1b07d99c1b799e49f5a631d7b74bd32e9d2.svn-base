@@ -1,0 +1,12 @@
+package cn.ritac.mmbs.service;
+
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.model.Users;
+
+public interface UsersService extends BaseService<Users,Integer> {
+
+	
+	PageInfo<Users> getUsers(String telephone,int pageSize,int pageIndex);
+	
+}

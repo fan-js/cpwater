@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.cpwater.mybatis.mapper.RolesMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.cpwater.mybatis.model.Roles">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="role_name" jdbcType="VARCHAR"
+			property="roleName" />
+		<result column="role_state" jdbcType="BIT" property="roleState" />
+		<result column="role_level" jdbcType="INTEGER"
+			property="roleLevel" />
+		<result column="role_descript" jdbcType="VARCHAR"
+			property="roleDescript" />
+	</resultMap>
+
+	<select id="findRoleForUser" resultMap="BaseResultMap">
+		SELECT
+		ro.id,
+		ro.role_name,
+		ro.role_state,
+		ro.role_descript
+		FROM cpwater_roles
+		ro
+		LEFT JOIN cpwater_role_admin rd ON ro.id =rd.role_id
+		LEFT JOIN
+		cpwater_user_role ur on rd.admin_id = ur.role_id
+		LEFT JOIN
+		cpwater_users us on
+		ur.user_id = us.id
+		WHERE 1=1
+		<if test="phone != null and phone != ''">
+			and us.telephone = #{phone}
+		</if>
+		<if test="userName != null and userName != ''">
+			and us.user_account = #{userName}
+		</if>
+		<if test="roleName != null and roleName != ''">
+			and ro.role_name = #{roleName}
+		</if>
+		GROUP BY ro.id
+		ORDER BY ro.id
+	</select>
+
+	<select id="findRoleForAdmin" resultMap="BaseResultMap">
+		SELECT
+		ros.*
+		FROM
+		cpwater_roles ros
+		INNER JOIN
+		cpwater_role_admin roa on roa.role_id = ros.id
+		where roa.admin_id = #{id}
+	</select>
+
+	<select id="getA_FunctionForRole" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM cpwater_roles rs
+		INNER JOIN cpwater_role_assets_fuction raf ON rs.id = raf.role_id
+		INNER JOIN cpwater_assets_function af on raf.assets_function_id = af.id
+		WHERE 1=1
+		<if test="rID !=null and rID > 0 ">
+			and rs.id = #{rID}
+		</if>
+		<if test="upA != null and upA != ''">
+			and ${upA}
+		</if>
+	</select>
+	
+	<select id="getD_FunctionForRole" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM cpwater_roles rs
+		INNER JOIN cpwater_role_device_fuction rdf ON rs.id = rdf.role_id
+		INNER JOIN cpwater_device_fuction df on rdf.device_fuction_id = df.id
+		WHERE 1=1
+		<if test="rID !=null and rID > 0 ">
+			and rs.id = #{rID}
+		</if>
+		<if test="upD != null and upD != ''">
+			and ${upD}
+		</if>
+	</select>
+
+</mapper>

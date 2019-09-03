@@ -1,0 +1,10 @@
+package cn.ritac.mmbs.service;
+
+
+import cn.ritac.mmbs.mybatis.model.AssetsFunction;
+
+public interface AssetsFunctionService extends BaseService<AssetsFunction, Integer> {
+	public void deleteByObj(AssetsFunction af);
+
+	public AssetsFunction findAssetsFunctionByRoleId(int roleId);
+}

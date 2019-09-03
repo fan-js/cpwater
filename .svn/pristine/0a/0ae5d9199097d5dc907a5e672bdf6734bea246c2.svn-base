@@ -1,0 +1,30 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public abstract class MQTTDeviceBase {
+
+	public int msgType;
+	
+	
+	
+	
+	private String deviceId;
+	
+
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+
+
+	public int getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(int msgType) {
+		this.msgType = msgType;
+	}
+}

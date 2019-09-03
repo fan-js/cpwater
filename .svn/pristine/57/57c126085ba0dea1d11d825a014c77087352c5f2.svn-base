@@ -1,0 +1,130 @@
+package cn.ritac.mmbs.mybatis.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.*;
+
+@Table(name = "mmbs_devices_reg")
+public class DevicesReg implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
+    private Integer id;
+
+    @Column(name = "device_id")
+    private Integer deviceId;
+
+    @Column(name = "fan_open_temper")
+    private Integer fanOpenTemper;
+
+    @Column(name = "heater_open_temper")
+    private Integer heaterOpenTemper;
+
+    @Column(name = "vol_alarm_limit")
+    private Integer volAlarmLimit;
+
+    @Column(name = "curr_alarm_limit")
+    private Integer currAlarmLimit;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @return id
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * @return device_id
+     */
+    public Integer getDeviceId() {
+        return deviceId;
+    }
+
+    /**
+     * @param deviceId
+     */
+    public void setDeviceId(Integer deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    /**
+     * @return fan_open_temper
+     */
+    public Integer getFanOpenTemper() {
+        return fanOpenTemper;
+    }
+
+    /**
+     * @param fanOpenTemper
+     */
+    public void setFanOpenTemper(Integer fanOpenTemper) {
+        this.fanOpenTemper = fanOpenTemper;
+    }
+
+    /**
+     * @return heater_open_temper
+     */
+    public Integer getHeaterOpenTemper() {
+        return heaterOpenTemper;
+    }
+
+    /**
+     * @param heaterOpenTemper
+     */
+    public void setHeaterOpenTemper(Integer heaterOpenTemper) {
+        this.heaterOpenTemper = heaterOpenTemper;
+    }
+
+    /**
+     * @return vol_alarm_limit
+     */
+    public Integer getVolAlarmLimit() {
+        return volAlarmLimit;
+    }
+
+    /**
+     * @param volAlarmLimit
+     */
+    public void setVolAlarmLimit(Integer volAlarmLimit) {
+        this.volAlarmLimit = volAlarmLimit;
+    }
+
+    /**
+     * @return curr_alarm_limit
+     */
+    public Integer getCurrAlarmLimit() {
+        return currAlarmLimit;
+    }
+
+    /**
+     * @param currAlarmLimit
+     */
+    public void setCurrAlarmLimit(Integer currAlarmLimit) {
+        this.currAlarmLimit = currAlarmLimit;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+}

@@ -1,0 +1,26 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.DeviceFuctionMapper;
+import cn.ritac.mmbs.mybatis.model.DeviceFuction;
+import cn.ritac.mmbs.service.DevicesFunctionService;
+
+@Service
+public class DevicesFunctionServiceImpl extends BaseServiceImpl<DeviceFuction> implements DevicesFunctionService {
+
+	@Autowired
+	private DeviceFuctionMapper deviceFuctionMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(deviceFuctionMapper);
+	}
+
+	@Override
+	public DeviceFuction findDeviceFunctionByRoleId(int roleId) {
+		return deviceFuctionMapper.findDeviceFunctionByRoleId(roleId);
+	}
+
+}

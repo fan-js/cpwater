@@ -1,0 +1,22 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesAIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDIMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.service.DevicesAIService;
+import cn.ritac.mmbs.service.DevicesDIService;
+
+@Service
+public class DevicesDIServiceImpl extends BaseServiceImpl<DevicesDI> implements DevicesDIService   {
+
+	@Autowired
+	private DevicesDIMapper devicesDIMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesDIMapper);
+	}
+}

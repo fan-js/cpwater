@@ -1,0 +1,22 @@
+package cn.ritac.mmbs.comm;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+	
+	@Autowired
+	public BaseReturnModel returnLogic;
+	
+	@ExceptionHandler(value = Exception.class)
+	public String defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+ 
+		return returnLogic.resultError(e.getMessage());
+		
+	}
+}
+

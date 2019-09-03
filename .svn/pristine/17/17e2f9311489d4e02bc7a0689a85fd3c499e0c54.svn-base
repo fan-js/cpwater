@@ -1,0 +1,30 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import cn.ritac.mmbs.mybatis.model.Order;
+import cn.ritac.mmbs.mybatis.model.Params;
+import cn.ritac.mmbs.mybatis.model.ResOrder;
+import cn.ritac.mmbs.web.dto.convert.AiDiDoutVO;
+import cn.ritac.mmbs.web.dto.convert.StatisticsData;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface OrderMapper extends Mapper<Order> {
+
+	public List<ResOrder> findOrder(@Param("orderState") Integer orderState, @Param("eventName") String eventName);
+
+	public List<Params> findEventParamList();
+
+	public void updateEventAction(int id, boolean orderAction);
+
+	public List<StatisticsData> getStatisticsOfOrder();
+
+	public List<StatisticsData> statisticsOrderOfgroup();
+
+	public List<AiDiDoutVO> get_orgerCountOfgroup();
+
+	public String get_paramVal(String pKye);
+
+}

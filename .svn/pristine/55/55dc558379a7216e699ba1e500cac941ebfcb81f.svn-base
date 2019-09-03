@@ -1,0 +1,35 @@
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoRecMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesDoRec;
+import cn.ritac.mmbs.mybatis.model.VDevicesDoRecList;
+import cn.ritac.mmbs.service.DevicesDoRecService;
+
+@Service
+public class DevicesDoRecServiceImpl extends BaseServiceImpl<DevicesDoRec> implements DevicesDoRecService  {
+
+	@Autowired
+	private DevicesDoRecMapper devicesDoRecMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesDoRecMapper);
+	}
+	
+	@Override
+	public PageInfo<VDevicesDoRecList> getDeviceDoRecord(String beginTime, String endTime, String userTel,
+			String deviceNum, int pageIndex, int pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<VDevicesDoRecList> list=devicesDoRecMapper.getDeviceDORecord(beginTime, endTime, userTel, deviceNum);
+		
+		return new PageInfo<>(list);
+	}
+	
+	
+
+	
+}

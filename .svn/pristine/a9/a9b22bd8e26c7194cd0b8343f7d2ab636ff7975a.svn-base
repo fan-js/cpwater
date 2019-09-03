@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.OrderMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.Order">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="event_id" jdbcType="INTEGER" property="eventId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="order_state" jdbcType="INTEGER" property="orderState" />
+    <result column="order_descript" jdbcType="VARCHAR" property="orderDescript" />
+    <result column="dispatch_time" jdbcType="TIMESTAMP" property="dispatchTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="processing_time" jdbcType="VARCHAR" property="processingTime" />
+  </resultMap>
+  
+   <resultMap id="CustomResultMap" type="cn.ritac.mmbs.mybatis.model.ResOrder">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="event_name" jdbcType="VARCHAR" property="eventName" />
+    <result column="user_account" jdbcType="VARCHAR" property="userAccount" />
+    <result column="order_state" jdbcType="VARCHAR" property="orderState" />
+     <result column="order_action" jdbcType="VARCHAR" property="orderAction" />
+    <result column="order_descript" jdbcType="VARCHAR" property="orderDescript" />
+    <result column="dispatch_time" jdbcType="TIMESTAMP" property="dispatchTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="processing_time" jdbcType="VARCHAR" property="processingTime" />
+  </resultMap>
+  
+  <select id="findOrder" resultMap="CustomResultMap">
+  	 SELECT
+			 o.id
+			,o.create_time
+			,s.param_value event_name
+			,p.param_value order_state
+			,pp.param_value order_action
+			,o.order_descript
+			,u.user_account
+			,o.dispatch_time
+			,o.update_time
+			,o.processing_time
+		FROM (
+			   SELECT k.* FROM (
+								SELECT
+									der.*,
+									p.param_value,
+									p.param_action
+								FROM mmbs_params p
+								INNER JOIN mmbs_devices_event_rec der on der.event_info = p.param_key
+								WHERE param_col= 'eventType' AND <![CDATA[ param_key < 9 ]]>
+								UNION
+								SELECT
+									der.*,
+									p.param_value,
+									p.param_action
+								FROM mmbs_params p 
+								INNER JOIN mmbs_devices_event_rec der on der.event_info = p.param_key AND der.event_content = p.param_level
+								WHERE p.param_col= 'eventType' AND p.param_key = 9
+		
+				) k ORDER BY k.create_time DESC
+		) s
+		RIGHT JOIN mmbs_order o on s.id = o.event_id
+		LEFT JOIN mmbs_users u on o.user_id = u.id
+		LEFT JOIN mmbs_params p on o.order_state = p.param_key  and p.param_col ='orderState'
+	 	LEFT JOIN mmbs_params pp on s.param_action = pp.param_key  and pp.param_col ='eventAction'
+		WHERE 1=1
+		<if test="orderState !=null">
+			AND o.order_state = #{orderState}
+		</if>
+		<if test="eventName !=null and eventName !=''">
+			AND s.param_value LIKE CONCAT('%',#{eventName},'%')
+		</if>
+  	
+  </select>
+  
+  
+  <resultMap id="paramResultMap"
+		type="cn.ritac.mmbs.mybatis.model.Params">
+		    <id column="id" jdbcType="INTEGER" property="id" />
+		<result column="order_type" jdbcType="VARCHAR" property="orderType" />
+		<result column="order_name" jdbcType="VARCHAR" property="orderName" />
+		<result column="order_action" jdbcType="VARCHAR" property="orderAction" />
+		<result column="order_descript" jdbcType="VARCHAR" property="orderDescript" />
+	</resultMap>
+
+	<select id="findEventParamList" resultMap="paramResultMap">
+		SELECT
+			ps.id,
+			ps.param_name order_type,
+			ps.param_value order_name,
+			p.param_value order_action,
+			p.param_descript order_descript
+		FROM mmbs_params ps,(
+			SELECT
+			*
+			FROM mmbs_params p 
+			WHERE p.param_col = 'eventAction'
+		) p 
+		where ps.param_action = p.param_key
+		AND ps.param_col = 'eventType'
+		ORDER BY ps.id 
+	</select>
+	<update id="updateEventAction">
+		UPDATE mmbs_params SET param_action = #{orderAction} WHERE id = #{id}
+	</update>
+	
+  <resultMap id="StatisticsResultMap" type="cn.ritac.mmbs.web.dto.convert.StatisticsData" >
+  <result column="name" jdbcType="VARCHAR" property="name" />
+  <result column="value" jdbcType="REAL" property="value" />
+  <result column="per" jdbcType="VARCHAR" property="per" />
+  </resultMap>
+  <select id="getStatisticsOfOrder" resultMap="StatisticsResultMap">
+	  SELECT
+		k.name,
+		num value,
+	    ROUND(num /s.con,3) per
+		FROM(
+			SELECT
+					id,
+					CASE WHEN order_state=0 THEN '未处理' ELSE (
+					CASE WHEN order_state=1 THEN '处理中' ELSE (
+					CASE WHEN order_state=2 THEN '已处理' ELSE '' END
+					) END
+					) END name,
+					count(1) num,
+					order_state
+				FROM mmbs_order 
+				 GROUP BY order_state
+		) k 
+		INNER JOIN (select COUNT(1) con FROM mmbs_order) s on 1=1
+  </select>
+  
+  <select id="get_orgerCountOfgroup" resultType="cn.ritac.mmbs.web.dto.convert.AiDiDoutVO">
+	  SELECT
+			s.group_name name
+			,SUM(num) value
+		FROM(
+		SELECT
+		  gp.id
+		 ,gp.group_name
+		 ,count(1) num
+		FROM mmbs_group gp
+		INNER JOIN mmbs_group_device gd on gp.id = gd.group_id
+		INNER JOIN mmbs_devices_event_rec eve ON eve.device_id = gd.device_id
+		INNER JOIN mmbs_order  od on od.event_id = eve.id
+		 GROUP BY gp.id , od.id
+		) s
+		GROUP BY s.id
+  </select>
+  
+</mapper>

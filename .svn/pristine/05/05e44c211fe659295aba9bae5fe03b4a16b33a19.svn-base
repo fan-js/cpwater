@@ -1,0 +1,142 @@
+package cn.ritac.mmbs.mybatis.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.*;
+
+@Table(name = "mmbs_devices_ai")
+public class DevicesAI implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
+    private Integer id;
+
+    @Column(name = "device_id")
+    private Integer deviceId;
+
+    private Float temper;
+
+    private Float humidity;
+
+    private Float voltage;
+
+    private Float current;
+
+    private Integer illuminance;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @return id
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * @return device_id
+     */
+    public Integer getDeviceId() {
+        return deviceId;
+    }
+
+    /**
+     * @param deviceId
+     */
+    public void setDeviceId(Integer deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    /**
+     * @return temper
+     */
+    public Float getTemper() {
+        return temper;
+    }
+
+    /**
+     * @param temper
+     */
+    public void setTemper(Float temper) {
+        this.temper = temper;
+    }
+
+    /**
+     * @return humidity
+     */
+    public Float getHumidity() {
+        return humidity;
+    }
+
+    /**
+     * @param humidity
+     */
+    public void setHumidity(Float humidity) {
+        this.humidity = humidity;
+    }
+
+    /**
+     * @return voltage
+     */
+    public Float getVoltage() {
+        return voltage;
+    }
+
+    /**
+     * @param voltage
+     */
+    public void setVoltage(Float voltage) {
+        this.voltage = voltage;
+    }
+
+    /**
+     * @return current
+     */
+    public Float getCurrent() {
+        return current;
+    }
+
+    /**
+     * @param current
+     */
+    public void setCurrent(Float current) {
+        this.current = current;
+    }
+
+    /**
+     * @return illuminance
+     */
+    public Integer getIlluminance() {
+        return illuminance;
+    }
+
+    /**
+     * @param illuminance
+     */
+    public void setIlluminance(Integer illuminance) {
+        this.illuminance = illuminance;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+}

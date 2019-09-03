@@ -1,0 +1,33 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.IOTCardMapper;
+import cn.ritac.mmbs.mybatis.model.IOTCard;
+import cn.ritac.mmbs.service.IOTCardService;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> IOTCardServiceImpl
+ *<br><b>CreatTime:</b> 2019年4月29日下午4:11:43
+ */
+
+@Service
+public class IOTCardServiceImpl extends BaseServiceImpl<IOTCard> implements IOTCardService {
+	@Autowired
+	private IOTCardMapper cardMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(cardMapper);
+	}
+}

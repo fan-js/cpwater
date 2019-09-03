@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.DevicesDIRecMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.DevicesDIRec">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="main_power_status" jdbcType="BIT" property="mainPowerStatus" />
+    <result column="door_status" jdbcType="BIT" property="doorStatus" />
+    <result column="ups_status" jdbcType="BIT" property="upsStatus" />
+    <result column="protect__status" jdbcType="BIT" property="protectStatus" />
+  </resultMap>
+</mapper>

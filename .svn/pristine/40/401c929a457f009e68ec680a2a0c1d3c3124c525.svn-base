@@ -1,0 +1,11 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesRegMapper extends Mapper<DevicesReg> {
+
+
+
+
+}

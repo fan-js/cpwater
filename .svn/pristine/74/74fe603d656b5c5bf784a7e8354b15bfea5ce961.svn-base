@@ -1,0 +1,14 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import cn.ritac.mmbs.mybatis.model.WorkingHour;
+import cn.ritac.mmbs.web.dto.ContVoltnetPojo;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface WorkingHourMapper extends Mapper<WorkingHour> {
+
+	public WorkingHour findWorkingHour(int deviceId, int month);
+
+	public List<ContVoltnetPojo> countVoltnetPropor();
+}

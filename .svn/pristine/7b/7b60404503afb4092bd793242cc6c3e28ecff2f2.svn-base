@@ -1,0 +1,10 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+
+import cn.ritac.mmbs.mybatis.model.WorkingHour;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface WorkingHourMapper extends Mapper<WorkingHour> {
+
+	public WorkingHour findWorkingHour(int deviceId, int month);
+}

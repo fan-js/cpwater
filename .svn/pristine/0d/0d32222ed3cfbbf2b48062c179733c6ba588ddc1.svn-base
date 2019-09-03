@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.RolesMapper">
+	<resultMap id="BaseResultMap"
+		type="cn.ritac.mmbs.mybatis.model.Roles">
+		<!-- WARNING - @mbg.generated -->
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="role_name" jdbcType="VARCHAR"
+			property="roleName" />
+		<result column="role_state" jdbcType="BIT" property="roleState" />
+		<result column="role_level" jdbcType="INTEGER"
+			property="roleLevel" />
+		<result column="role_descript" jdbcType="VARCHAR"
+			property="roleDescript" />
+	</resultMap>
+
+	<select id="findRoleForUser" resultMap="BaseResultMap">
+		SELECT
+		ro.id
+		,ro.role_name
+		,ro.role_state
+		,ro.role_descript
+		FROM mmbs_roles ro
+		INNER JOIN
+		mmbs_user_role ur on ur.role_id = ro.id
+		INNER JOIN
+		mmbs_users us on
+		us.id = ur.user_id
+		WHERE us.telephone = #{phone}
+	</select>
+
+	<select id="findRoleForAdmin" resultMap="BaseResultMap">
+		SELECT
+		ros.*
+		FROM mmbs_roles ros
+		INNER JOIN
+		mmbs_role_admin roa on roa.role_id = ros.id
+		where roa.admin_id = #{id}
+	</select>
+
+</mapper>

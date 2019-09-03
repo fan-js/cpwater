@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.UsersMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.Users">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_account" jdbcType="VARCHAR" property="userAccount" />
+    <result column="pwd" jdbcType="VARCHAR" property="pwd" />
+    <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    
+     <result column="user_token" jdbcType="VARCHAR" property="user_token" />
+     <result column="user_state" jdbcType="BIT" property="user_state" />
+     <result column="user_email" jdbcType="VARCHAR" property="user_email" />
+     <result column="user_sex" jdbcType="VARCHAR" property="user_sex" />
+       
+     <result column="head_portrait" jdbcType="VARCHAR" property="head_portrait" />
+     <result column="user_address" jdbcType="VARCHAR" property="user_address" />
+     <result column="user_company" jdbcType="VARCHAR" property="user_company" />
+     <result column="user_department" jdbcType="VARCHAR" property="user_department" />
+    
+  </resultMap>
+  
+  
+  
+  <select id="getUsers" resultMap="BaseResultMap">
+  
+  select * from mmbs_users 
+  
+  <where>
+   user_state = 1
+  <if test="telephone!=null and telephone!=''">
+   	 and telephone=#{telephone}
+  </if>
+  
+  </where>
+  
+  </select>
+  
+  <select id="queryUserByNameOrPhoneOrEmail"
+		resultMap="BaseResultMap">
+		SELECT * from mmbs_users lu
+		where 1=1
+		<if test="userName!=null and userName!=''">
+			lu.telephone = #{userName}
+		</if>
+		<if test="pwd!=null and pwd!=''">
+			and
+			lu.pwd =#{pwd}
+		</if>
+	</select>
+	
+	<select id="userProporList" resultType="cn.ritac.mmbs.web.dto.convert.ProporVO">
+		SELECT
+			 CASE a.admin_name  WHEN '管理员' THEN a.admin_name ELSE (
+			 CASE a.admin_name  WHEN '巡检员' THEN a.admin_name ELSE(
+			 CASE a.admin_name  WHEN '维保员' THEN a.admin_name ELSE '' 
+				END
+				)END
+				) END name
+				,COUNT(a.admin_name) value
+				,TRUNCATE(ROUND(COUNT(a.admin_name) /k.num,3)*100,2) per
+		FROM mmbs_admin a
+		INNER JOIN mmbs_user_role ur on a.id = ur.role_id
+		INNER JOIN(
+		SELECT COUNT(1) num FROM mmbs_users
+		) k on 1=1
+		GROUP BY a.admin_name
+	</select>
+</mapper>

@@ -1,0 +1,18 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.service.DevicesDOService;
+
+@Service
+public class DevicesDOServiceImpl extends BaseServiceImpl<DevicesDo> implements DevicesDOService {
+	
+	@Autowired
+	private DevicesDoMapper devicesDoMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesDoMapper);
+	}
+}

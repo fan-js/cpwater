@@ -1,0 +1,130 @@
+package cn.ritac.mmbs.mybatis.model;
+
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.*;
+
+@Table(name = "mmbs_devices_di")
+public class DevicesDI implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
+    private Integer id;
+
+    @Column(name = "device_id")
+    private Integer deviceId;
+
+    @Column(name = "work_status")
+    private Boolean workStatus;
+
+    @Column(name = "surge_status")
+    private Boolean surgeStatus;
+
+    @Column(name = "comm__status")
+    private Boolean commStatus;
+
+    @Column(name = "main_power_status")
+    private Boolean mainPowerStatus;
+
+    @Column(name = "update_time")
+    private Date updateTime;
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @return id
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * @return device_id
+     */
+    public Integer getDeviceId() {
+        return deviceId;
+    }
+
+    /**
+     * @param deviceId
+     */
+    public void setDeviceId(Integer deviceId) {
+        this.deviceId = deviceId == null ? null : deviceId;
+    }
+
+    /**
+     * @return work_status
+     */
+    public Boolean getWorkStatus() {
+        return workStatus;
+    }
+
+    /**
+     * @param workStatus
+     */
+    public void setWorkStatus(Boolean workStatus) {
+        this.workStatus =workStatus;
+    }
+
+    /**
+     * @return surge_status
+     */
+    public Boolean getSurgeStatus() {
+        return surgeStatus;
+    }
+
+    /**
+     * @param surgeStatus
+     */
+    public void setSurgeStatus(Boolean surgeStatus) {
+        this.surgeStatus = surgeStatus;
+    }
+
+    /**
+     * @return comm__status
+     */
+    public Boolean getCommStatus() {
+        return commStatus;
+    }
+
+    /**
+     * @param commStatus
+     */
+    public void setCommStatus(Boolean commStatus) {
+        this.commStatus = commStatus;
+    }
+
+    /**
+     * @return main_power_status
+     */
+    public Boolean getMainPowerStatus() {
+        return mainPowerStatus;
+    }
+
+    /**
+     * @param mainPowerStatus
+     */
+    public void setMainPowerStatus(Boolean mainPowerStatus) {
+        this.mainPowerStatus = mainPowerStatus;
+    }
+
+    /**
+     * @return update_time
+     */
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    /**
+     * @param updateTime
+     */
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+}

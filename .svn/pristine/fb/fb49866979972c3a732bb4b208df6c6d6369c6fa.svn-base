@@ -1,0 +1,21 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import cn.ritac.mmbs.mybatis.model.DevicesDoRec;
+import cn.ritac.mmbs.mybatis.model.VDevicesDoRecList;
+
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesDoRecMapper extends Mapper<DevicesDoRec> {
+	
+	
+	 List<VDevicesDoRecList> getDeviceDORecord(@Param("beginTime") String beginTime,
+			@Param("endTime")String endTime, 
+			@Param("userTel")String userTel,
+											   @Param("deviceNum")String deviceNum);
+	
+}

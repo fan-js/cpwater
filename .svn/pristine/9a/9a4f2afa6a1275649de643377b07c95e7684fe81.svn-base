@@ -1,0 +1,10 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import cn.ritac.mmbs.mybatis.model.Assets;
+import cn.ritac.mmbs.web.dto.convert.AssetsCount;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface AssetsMapper extends Mapper<Assets> {
+
+	public AssetsCount countIfAssets();
+}

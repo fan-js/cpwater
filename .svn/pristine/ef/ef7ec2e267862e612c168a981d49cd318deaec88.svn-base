@@ -1,0 +1,25 @@
+package cn.ritac.mmbs.mybatis.mapper;
+
+import java.util.List;
+
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.web.dto.convert.AiDiDoutVO;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import tk.mybatis.mapper.common.Mapper;
+
+public interface DevicesEventRecMapper extends Mapper<DevicesEventRec> {
+
+	public List<EventVO> get_eventList();
+
+	public List<AiDiDoutVO> get_eventTypeOfgroup();
+	
+	public List<AiDiDoutVO> get_eventCountOfGroup();
+	
+	public List<AiDiDoutVO> get_eventCount();
+	
+	
+	
+	
+	
+
+}

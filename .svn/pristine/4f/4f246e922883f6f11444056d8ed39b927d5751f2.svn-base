@@ -1,0 +1,21 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesRegMapper;
+
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+
+import cn.ritac.mmbs.service.DevicesRegService;
+
+@Service
+public class DevicesRegServiceImpl  extends BaseServiceImpl<DevicesReg> implements DevicesRegService{
+
+	@Autowired
+	private DevicesRegMapper devicesRegMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesRegMapper);
+	}
+}

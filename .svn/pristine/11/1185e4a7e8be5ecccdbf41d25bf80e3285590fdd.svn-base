@@ -1,0 +1,18 @@
+package cn.ritac.mmbs.web.controller.api;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+
+import cn.ritac.mmbs.comm.BaseReturnModel;
+
+
+
+public class BaseController {
+	
+	@Autowired
+	public BaseReturnModel returnLogic;
+
+	
+	
+}

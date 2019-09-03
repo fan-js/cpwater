@@ -1,0 +1,32 @@
+package cn.ritac.mmbs.service.impl;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import cn.ritac.mmbs.mybatis.mapper.RoleAdminMapper;
+import cn.ritac.mmbs.mybatis.model.RoleAdmin;
+import cn.ritac.mmbs.service.RolesAdminService;
+
+/***
+ * 
+ * @author admin
+ *
+ */
+
+@Service
+public class RolesAdminImpl extends BaseServiceImpl<RoleAdmin> implements RolesAdminService {
+
+	@Autowired
+	private RoleAdminMapper roleAdminMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(roleAdminMapper);
+	}
+
+	@Override
+	public void deleteByObj(RoleAdmin ra) {
+		roleAdminMapper.delete(ra);
+	}
+
+}

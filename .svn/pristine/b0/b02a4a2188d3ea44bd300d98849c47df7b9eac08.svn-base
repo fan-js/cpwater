@@ -1,0 +1,30 @@
+package cn.ritac.mmbs.service.impl;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import cn.ritac.mmbs.mybatis.mapper.AssetsFunctionMapper;
+import cn.ritac.mmbs.mybatis.model.AssetsFunction;
+import cn.ritac.mmbs.service.AssetsFunctionService;
+
+@Service
+public class AssetsFunctionServiceImpl extends BaseServiceImpl<AssetsFunction> implements AssetsFunctionService {
+
+	@Autowired
+	private AssetsFunctionMapper assetsFunctionMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(assetsFunctionMapper);
+	}
+
+	public void deleteByObj(AssetsFunction af) {
+		assetsFunctionMapper.delete(af);
+	}
+
+	@Override
+	public AssetsFunction findAssetsFunctionByRoleId(int roleId) {
+		return assetsFunctionMapper.findAssetsFunctionByRoleId(roleId);
+	}
+
+}

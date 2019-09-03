@@ -1,0 +1,29 @@
+package cn.ritac.mmbs.service;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.mybatis.model.VDeviceEventREC;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression.DateTime;
+
+public interface DevicesEventRecService extends BaseService<DevicesEventRec,Integer>  {
+
+	
+	/**
+	 * 得到事件列表
+	 * @param beginTime
+	 * @param endTime
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	public PageInfo<VDeviceEventREC> getDeviceEventRecord (String beginTime,
+			String endTime, 
+			String deviceNum,int pageIndex,int pageSize);
+}

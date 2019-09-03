@@ -1,0 +1,32 @@
+package cn.ritac.mmbs.comm;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+	@Autowired
+	public BaseReturnModel returnLogic;
+
+	@ExceptionHandler(value = Exception.class)
+	public String defaultErrorHandler(HttpServletRequest req, Exception e) {
+		String msg = e.getMessage();
+		int code = 206;
+		String resMsg = e.getMessage();
+		if (!StringUtils.isEmpty(msg)) {
+			String[] msgs = msg.split("-");
+			if (msgs.length == 2) {
+				resMsg = msgs[0];
+				code = Integer.parseInt(msgs[1]);
+			}
+		}
+		e.printStackTrace();
+		return returnLogic.resultErrorJsonString(code, resMsg);
+
+	}
+}

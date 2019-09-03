@@ -1,0 +1,38 @@
+package cn.ritac.mmbs;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.comm.mqtt.ServerMQTT;
+import cn.ritac.mmbs.service.MQTTService;
+import tk.mybatis.spring.annotation.MapperScan;
+
+@MapperScan(basePackages = "cn.ritac.mmbs.mybatis.mapper*")
+@SpringBootApplication
+@ComponentScan 
+@EnableScheduling
+public class MmbsApplication extends SpringBootServletInitializer {
+
+
+	
+	//extends SpringBootServletInitializer
+	public static void main(String[] args) {
+		SpringApplication.run(MmbsApplication.class, args);
+	
+	
+	}
+	
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(MmbsApplication.class);
+	}
+	
+}

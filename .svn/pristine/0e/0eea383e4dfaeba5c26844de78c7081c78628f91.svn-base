@@ -1,0 +1,83 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
+import cn.ritac.mmbs.mybatis.mapper.OrderMapper;
+import cn.ritac.mmbs.mybatis.model.Order;
+import cn.ritac.mmbs.mybatis.model.Params;
+import cn.ritac.mmbs.mybatis.model.ResOrder;
+import cn.ritac.mmbs.service.OrderService;
+import cn.ritac.mmbs.web.dto.convert.StatisticsData;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> OrderServiceImpl
+ *<br><b>CreatTime:</b> 2019年4月22日下午12:15:36
+ */
+@Service
+public class OrderServiceImpl extends BaseServiceImpl<Order> implements OrderService {
+
+	@Autowired
+	private OrderMapper orderMapper;
+
+	@Autowired
+	public void setInit() {
+		super.setInit(orderMapper);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.OrderService#findOrder(int, java.lang.String)
+	 */
+	@Override
+	public PageInfo<ResOrder> findOrder(int pageIndex, int pageSize, Integer orderState, String eventName) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<ResOrder> list = orderMapper.findOrder(orderState, eventName);
+		return new PageInfo<>(list);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.OrderService#findEventParamList()
+	 */
+	@Override
+	public List<Params> findEventParamList() {
+		return orderMapper.findEventParamList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.OrderService#updateEventAction(int, boolean)
+	 */
+	@Override
+	public void updateEventAction(int id, boolean orderAction) {
+		orderMapper.updateEventAction(id, orderAction);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see cn.ritac.mmbs.service.OrderService#getStatisticsOfOrder()
+	 */
+	@Override
+	public List<StatisticsData> getStatisticsOfOrder() {
+		return orderMapper.getStatisticsOfOrder();
+	}
+}

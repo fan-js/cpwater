@@ -1,0 +1,27 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.service.DevicesAIService;
+import cn.ritac.mmbs.service.DevicesDOService;
+
+@Service
+public class DevicesDOServiceImpl extends BaseServiceImpl<DevicesDo> implements DevicesDOService {
+	
+	@Autowired
+	private DevicesDoMapper devicesDoMapper;
+	@Autowired
+	public void setInit() {
+		super.setInit(devicesDoMapper);
+	}
+	@Override
+	public DevicesDo queryDeviceDoByDeviceId(int deviceId) {
+		// TODO Auto-generated method stub
+		return devicesDoMapper.queryDeviceDoByDeviceId(deviceId);
+	}
+}

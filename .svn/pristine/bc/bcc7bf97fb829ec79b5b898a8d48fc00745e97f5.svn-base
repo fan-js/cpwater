@@ -1,0 +1,38 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+public class MQTTDeviceConfigSettingParams {
+	
+	public String getDeviceKey() {
+		return deviceKey;
+	}
+	public void setDeviceKey(String deviceKey) {
+		this.deviceKey = deviceKey;
+	}
+
+	public int getMsgType() {
+		return msgType;
+	}
+	public void setMsgType(int msgType) {
+		this.msgType = msgType;
+	}
+
+	public MQTTDeviceConfigClientUpMsgDataParams getMsgData() {
+		return msgData;
+	}
+	public void setMsgData(MQTTDeviceConfigClientUpMsgDataParams msgData) {
+		this.msgData = msgData;
+	}
+
+	private String deviceNum;
+	public String getDeviceNum() {
+		return deviceNum;
+	}
+	public void setDeviceNum(String deviceNum) {
+		this.deviceNum = deviceNum;
+	}
+
+	private String deviceKey;
+
+	private int msgType;
+	private MQTTDeviceConfigClientUpMsgDataParams msgData;
+}

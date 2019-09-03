@@ -1,0 +1,9 @@
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.EventSetting;
+import cn.ritac.mmbs.web.dto.EventSettingDto;
+
+public interface EventSettingService  extends BaseService<EventSetting,Integer>{
+
+}

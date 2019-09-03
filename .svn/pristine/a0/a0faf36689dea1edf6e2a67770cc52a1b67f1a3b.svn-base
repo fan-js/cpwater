@@ -1,0 +1,28 @@
+package cn.ritac.mmbs.comm.mqtt.message;
+
+import java.util.List;
+
+import cn.ritac.mmbs.comm.mqtt.newdev.MQTTAddrVal;
+
+public class MQTTDeviceConfigClientUpMsgData {
+	private int addr;
+
+	private List<MQTTAddrVal> reg;
+
+	public int getAddr() {
+		return addr;
+	}
+
+	public void setAddr(int addr) {
+		this.addr = addr;
+	}
+
+	public List<MQTTAddrVal> getReg() {
+		return reg;
+	}
+
+	public void setReg(List<MQTTAddrVal> reg) {
+		this.reg = reg;
+	}
+
+}

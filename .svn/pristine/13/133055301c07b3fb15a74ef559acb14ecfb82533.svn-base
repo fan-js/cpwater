@@ -1,0 +1,422 @@
+package cn.ritac.mmbs.service.impl;
+
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import cn.ritac.mmbs.comm.MyHttpRequest;
+import cn.ritac.mmbs.comm.mqtt.ServerMQTT;
+import cn.ritac.mmbs.comm.mqtt.message.KeyValue;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigSetting;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceConfigUp;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceControlSend;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceEventData;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceLogin;
+import cn.ritac.mmbs.comm.mqtt.message.MQTTDeviceLoginResult;
+import cn.ritac.mmbs.comm.mqtt.message.MsgData;
+import cn.ritac.mmbs.comm.mqtt.message.MsgDataEventInfo;
+import cn.ritac.mmbs.comm.socket.SocketManager;
+import cn.ritac.mmbs.mybatis.mapper.DevicesAIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDIMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesEventRecMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesMapper;
+import cn.ritac.mmbs.mybatis.mapper.DevicesRegMapper;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesEventRec;
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+import cn.ritac.mmbs.service.MQTTService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Service("MQTTService")
+public class MQTTServiceImpl implements MQTTService {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private DevicesMapper devicesMapper;
+
+	@Autowired
+	private ServerMQTT serverMQTT;
+
+	@Autowired
+	private DevicesDIMapper devicesDIMapper;
+
+	@Autowired
+	private DevicesAIMapper devicesAIMapper;
+
+	@Autowired
+	private DevicesDoMapper devicesDoMapper;
+
+	@Autowired
+	private DevicesEventRecMapper devicesEventRecMapper;
+
+	@Autowired
+	private DevicesRegMapper devicesRegMapper;
+
+	/**
+	 * 设备注册回复
+	 */
+	@Override
+	@Transactional
+	public void sendLoginMsg(MQTTDeviceLogin login) {
+
+		if (login.getProductId().equals("IVMB") && login.getProductKey().equals("NJcasyml")) {
+			Devices devicesInfo = devicesMapper.getDevice(login.getDeviceId(), login.getProductKey());
+			if (devicesInfo == null) {
+
+				devicesInfo = new Devices();
+				devicesInfo.setCreateTime(new Date());
+				devicesInfo.setDeviceKey(login.getDeviceKey());
+				devicesInfo.setDeviceModel(login.getModel());
+				devicesInfo.setDeviceNum(login.getDeviceId());
+				devicesInfo.setDeviceVersion(login.getHardwareVer());
+				devicesInfo.setLat(login.getPosition().getLongitude());
+				devicesInfo.setLon(login.getPosition().getDimension());
+				devicesInfo.setOnline(true);
+				devicesInfo.setSignal(Integer.parseInt(login.getSignalQuality()));
+				// 添加设备
+				devicesMapper.insert(devicesInfo);
+				int deviceId = devicesInfo.getId();
+				System.out.println("deviceId:" + deviceId);
+				DevicesAI devicesAI = new DevicesAI();
+				devicesAI.setDeviceId(deviceId);
+				devicesAIMapper.insert(devicesAI);
+				// 添加AI
+				DevicesDo devicesDo = new DevicesDo();
+				devicesDo.setDeviceId(deviceId);
+				// 添加DO
+				devicesDoMapper.insert(devicesDo);
+				DevicesDI devicesDI = new DevicesDI();
+				devicesDI.setDeviceId(deviceId);
+				// 添加DI
+				devicesDIMapper.insert(devicesDI);
+				DevicesReg devicesReg = new DevicesReg();
+				devicesReg.setDeviceId(deviceId);
+				// 添加REG
+				devicesRegMapper.insert(devicesReg);
+
+			}
+			try {
+				MQTTDeviceLoginResult loginResult = new MQTTDeviceLoginResult();
+				loginResult.setDeviceId(login.getDeviceId());
+				loginResult.setDeviceKey(login.getProductKey());
+				loginResult.setMsgType(1);
+				loginResult.setMsgState(1);
+				MqttTopic topic = serverMQTT.getClient().getTopic("SODI" + login.getDeviceId());
+				MqttMessage msg = new MqttMessage();
+				msg.setQos(ServerMQTT.QOS);
+				msg.setRetained(false);// 是否保留当前发布，以备新订阅者也可接受消息
+				msg.setPayload(JSONObject.toJSONString(loginResult).getBytes());
+				serverMQTT.publish(topic, msg);
+				System.out.println(JSONObject.toJSONString(loginResult));
+			} catch (MqttPersistenceException e) {
+				logger.error("发送注册成功:" + e.getMessage());
+				e.printStackTrace();
+			} catch (MqttException e) {
+				logger.error("发送注册成功:" + e.getMessage());
+				e.printStackTrace();
+			}
+		} else {
+			logger.error("注册密钥错误:" + login.getDeviceId() + "key:" + login.getDeviceKey());
+		}
+	}
+
+	private Object getDoValue(int key, KeyValue[] list) {
+		for (KeyValue keyValue : list) {
+			if (keyValue.getAddr() == key) {
+				Object object = keyValue.getVal();
+				return object;
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * 得到设备端上传
+	 */
+	@Override
+	public void getBaseData(MQTTDeviceData data) {
+
+		String deviceNum = data.getDeviceId();
+
+		Devices devices = new Devices();
+		devices.setDeviceNum(deviceNum);
+		devices.setDeviceKey(data.getDeviceKey());
+		Devices devicesInfo = devicesMapper.selectOne(devices);
+
+		if (devicesInfo != null) {
+			try {
+				int deviceId = devicesInfo.getId();
+				MsgData msd = null;
+				KeyValue[] douts = null;
+				KeyValue[] ais = null;
+				KeyValue[] dis = null;
+				if (data != null)
+					msd = data.getMsgData();
+				if (msd != null) {
+					douts = msd.getDout();
+					ais = msd.getAi();
+					dis = msd.getDi();
+				}
+
+				if (douts != null && douts.length > 0) {
+					DevicesDo devicesDoSearch = new DevicesDo();
+					devicesDoSearch.setDeviceId(deviceId);
+					DevicesDo devicesDo = devicesDoMapper.selectOne(devicesDoSearch);
+					// 支持单通道数据修改
+					for (KeyValue key : douts) {
+						switch (key.getAddr()) {
+						case 1:
+							devicesDo.setLight((boolean) key.getVal()); // 灯光
+							break;
+						case 2:
+							devicesDo.setBeep((boolean) key.getVal()); // 蜂鸣器
+							break;
+						case 3:
+							devicesDo.setFan((boolean) key.getVal()); // 风扇
+							break;
+						case 4:
+							devicesDo.setHeating((boolean) key.getVal()); // 加热器
+							break;
+						case 5:
+							devicesDo.setDoor((boolean) key.getVal()); // 柜门
+							break;
+						case 6:
+							devicesDo.setBakSwitch((boolean) key.getVal()); // 备用开关
+							break;
+						case 7:
+							devicesDo.setCameraPwr((boolean) key.getVal()); // 摄像机电源
+							break;
+						case 8:
+							devicesDo.setFillLightPwr((boolean) key.getVal()); // 补光灯电源
+							break;
+						case 9:
+							devicesDo.setOnuPwr((boolean) key.getVal()); // ONU电源
+							break;
+						case 10:
+							devicesDo.setRouterPwr((boolean) key.getVal()); // 路由器电源
+							break;
+						default:
+							break;
+						}
+					}
+					devicesDo.setUpdateTime(new Date());
+					devicesDoMapper.updateByPrimaryKey(devicesDo);
+				}
+
+				if (ais != null && ais.length > 0) {
+					DevicesAI devicesAISearch = new DevicesAI();
+					devicesAISearch.setDeviceId(deviceId);
+					DevicesAI devicesAI = devicesAIMapper.selectOne(devicesAISearch);
+
+					devicesAI.setTemper(Float.parseFloat(getDoValue(1, data.getMsgData().getAi()).toString())); // 温度
+					devicesAI.setHumidity(Float.parseFloat(getDoValue(2, data.getMsgData().getAi()).toString())); // 湿度
+					devicesAI.setVoltage(Float.parseFloat(getDoValue(3, data.getMsgData().getAi()).toString())); // 电压
+					devicesAI.setCurrent(Float.parseFloat(getDoValue(4, data.getMsgData().getAi()).toString())); // 电流
+					devicesAI.setIlluminance((int) getDoValue(5, data.getMsgData().getAi()));// 照度
+					devicesAI.setUpdateTime(new Date());
+					devicesAIMapper.updateByPrimaryKey(devicesAI);
+				}
+
+				if (dis != null && dis.length > 0) {
+					DevicesDI devicesDISearch = new DevicesDI();
+					devicesDISearch.setDeviceId(deviceId);
+					DevicesDI devicesDI = devicesDIMapper.selectOne(devicesDISearch);
+
+					devicesDI.setWorkStatus((boolean) (getDoValue(1, data.getMsgData().getDi()))); // 工作状态
+					devicesDI.setSurgeStatus((boolean) getDoValue(2, data.getMsgData().getDi())); // 防雷保护器状态
+					devicesDI.setCommStatus((boolean) getDoValue(3, data.getMsgData().getDi()));// 通讯状态
+					devicesDI.setMainPowerStatus((boolean) getDoValue(4, data.getMsgData().getDi())); // 供电状态
+					devicesDI.setUpdateTime(new Date());
+					devicesDIMapper.updateByPrimaryKey(devicesDI);
+				}
+			} catch (Exception ex) {
+				logger.error("基本数据上传修改出错:" + ex.getMessage());
+			}
+		} else {
+			logger.error("得到设备端上传密钥错误:" + data.getDeviceId() + "key:" + data.getDeviceKey());
+		}
+		// 数据上传结束，通知在线用户更新数据
+		sendMessageToUsers();
+
+	}
+
+	@Override
+	public void getEvent(MQTTDeviceEventData eventData) {
+
+		String deviceNum = eventData.getDeviceId();
+
+		Devices devices = new Devices();
+		devices.setDeviceNum(deviceNum);
+		devices.setDeviceKey(eventData.getDeviceKey());
+		Devices devicesInfo = devicesMapper.selectOne(devices);
+
+		if (devicesInfo != null) {
+
+			for (MsgDataEventInfo eventItem : eventData.getMsgData().getEventInfo()) {
+				DevicesEventRec devicesEventRec = new DevicesEventRec();
+
+				devicesEventRec.setDeviceId(devicesInfo.getId());
+				devicesEventRec.setEventInfo(String.valueOf(eventItem.getEvent_sn()));
+				try {
+					devicesEventRec
+							.setCreateTime(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(eventData.getTime()));
+					devicesEventRecMapper.insert(devicesEventRec);
+				} catch (ParseException e) {
+
+					logger.error("插入事件出错:" + e.getMessage());
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+
+				}
+
+			}
+
+		} else {
+			logger.error("得到事件端密钥错误:" + eventData.getDeviceId() + "key:" + eventData.getDeviceKey());
+		}
+	}
+
+	@Override
+	public void getDeviceConfig(MQTTDeviceConfigUp mqttDeviceConfigUp) {
+
+		String deviceNum = mqttDeviceConfigUp.getDeviceId();
+
+		Devices devices = new Devices();
+		devices.setDeviceNum(deviceNum);
+		devices.setDeviceKey(mqttDeviceConfigUp.getDeviceKey());
+		Devices devicesInfo = devicesMapper.selectOne(devices);
+
+		if (devicesInfo != null) {
+			try {
+
+				DevicesReg devicesRegSearch = new DevicesReg();
+
+				devicesRegSearch.setDeviceId(devicesInfo.getId());
+
+				DevicesReg devicesRegInfo = devicesRegMapper.selectOne(devicesRegSearch);
+				KeyValue[] data = null;
+				if (mqttDeviceConfigUp.getMsgData() != null)
+					data = mqttDeviceConfigUp.getMsgData().getReg();
+				if (data != null && data.length > 0) {
+					devicesRegInfo.setDeviceId(devicesInfo.getId());
+					devicesRegInfo.setFanOpenTemper(Integer.parseInt(getDoValue(1, data).toString().trim()));
+					devicesRegInfo.setHeaterOpenTemper(Integer.parseInt(getDoValue(2, data).toString().trim()));
+					devicesRegInfo.setVolAlarmLimit(Integer.parseInt(getDoValue(3, data).toString().trim()));
+					devicesRegInfo.setCurrAlarmLimit(Integer.parseInt(getDoValue(4, data).toString().trim()));
+					devicesRegInfo.setUpdateTime(
+							new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(mqttDeviceConfigUp.getTime()));
+					devicesRegMapper.updateByPrimaryKey(devicesRegInfo);
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				logger.error("更新配置信息出错:" + e.getMessage());
+			}
+
+		} else {
+			logger.error("得到配置信息密钥错误:" + mqttDeviceConfigUp.getDeviceId() + "key:" + mqttDeviceConfigUp.getDeviceKey());
+		}
+	}
+
+	@Override
+	public void setDeviceConfig(MQTTDeviceConfigSetting setting) {
+		MqttTopic topic = serverMQTT.getClient().getTopic("SODI" + setting.getDeviceId());
+		MqttMessage msg = new MqttMessage();
+		msg.setQos(ServerMQTT.QOS);
+		msg.setRetained(false);
+		msg.setPayload(JSONObject.toJSONString(setting).getBytes());
+		try {
+			serverMQTT.publish(topic, msg);
+		} catch (MqttPersistenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("设置设备配置命令---:" + JSONObject.toJSONString(setting));
+
+	}
+
+	@Override
+	public void sendDeviceControlCommand(MQTTDeviceControlSend controlCommand) {
+		MqttTopic topic = serverMQTT.getClient().getTopic("SODI" + controlCommand.getDeviceId());
+		MqttMessage msg = new MqttMessage();
+		msg.setQos(ServerMQTT.QOS);
+		msg.setRetained(false);
+		msg.setPayload(JSONObject.toJSONString(controlCommand).getBytes());
+		try {
+			serverMQTT.publish(topic, msg);
+		} catch (MqttPersistenceException e) {
+			// TODO Auto-generated catch block
+			logger.error("发送命令出错:" + e.getMessage());
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			logger.error("发送命令出错:" + e.getMessage());
+			e.printStackTrace();
+		}
+		logger.info("控制命令下发---:" + JSONObject.toJSONString(controlCommand));
+
+	}
+
+	@Transactional
+	@Override
+	public void getDeviceStatus() {
+
+		Map<String, Object> map1 = new HashMap<String, Object>();
+		String content = MyHttpRequest.sendGet("http://120.27.213.48:18083/api/clients", map1, "utf-8");
+		System.out.println(content);
+		if (content.indexOf("result") != -1) {
+			JSONObject jsonObject = JSON.parseObject(content);
+			JSONArray results = jsonObject.getJSONArray("result");
+
+			List<String> clients = new ArrayList<>();
+
+			for (int i = 0; i < results.size(); i++) {
+				JSONObject job = results.getJSONObject(i);
+				String deviceNum = job.get("clientId").toString().trim();
+				clients.add(deviceNum);
+
+			}
+			String[] strings = new String[clients.size()];
+
+			try {
+				devicesMapper.saveStatusUnOnLine(clients.toArray(strings));
+				devicesMapper.saveStatusOnLine(clients.toArray(strings));
+
+			} catch (Exception e) {
+				logger.error("更新设备在线状态出错:" + e.getMessage());
+			}
+		}
+		// 测试触发用，正式版本需要删除
+		// sendMessageToUsers();
+	}
+
+	// 通知在线用户更新数据
+	@Override
+	public void sendMessageToUsers() {
+		SocketManager.sendMsg("{update:true}");
+
+	}
+
+}

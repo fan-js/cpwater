@@ -1,0 +1,20 @@
+/*
+ *
+ *
+ */
+package cn.ritac.mmbs.service;
+
+import cn.ritac.mmbs.mybatis.model.RegCamera;
+
+/**
+ *<b>Description:</b><br>
+ * @author admin
+ * @version V1.0<br>
+ * @Note
+ *<b>ProjectName:</b> mmbs
+ *<br><b>ClassName:</b> RegCameraService
+ *<br><b>CreatTime:</b> 2019年5月6日下午3:59:44
+ */
+public interface RegCameraService extends BaseService<RegCamera, Integer> {
+
+}

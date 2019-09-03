@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.ritac.mmbs.mybatis.mapper.UserDevicesBindMapper">
+  <resultMap id="BaseResultMap" type="cn.ritac.mmbs.mybatis.model.UserDevicesBind">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  
+    <resultMap id="VDeviceUserBindResultMap" type="cn.ritac.mmbs.mybatis.model.VDeviceUserBind">
+    
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_num" jdbcType="VARCHAR" property="deviceNum" />
+    <result column="deviceKey" jdbcType="VARCHAR" property="key" />
+    <result column="device_model" jdbcType="VARCHAR" property="deviceModel" />
+    <result column="lon" jdbcType="VARCHAR" property="lon" />
+    <result column="lat" jdbcType="VARCHAR" property="lat" />
+    <result column="position_des" jdbcType="VARCHAR" property="positionDes" />
+    <result column="online" jdbcType="BIT" property="online" />
+    <result column="online_time" jdbcType="TIMESTAMP" property="onlineTime" />
+    <result column="offline_time" jdbcType="TIMESTAMP" property="offlineTime" />
+    <result column="signal" jdbcType="INTEGER" property="signal" />
+    <result column="device_version" jdbcType="VARCHAR" property="deviceVersion" />
+    <result column="soft_version" jdbcType="VARCHAR" property="softVersion" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    
+    
+    
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="user_id" jdbcType="INTEGER" property="userId" />
+
+
+
+    
+    
+  </resultMap>
+  
+  
+  
+  <select id="getDeviceUserBind" resultMap="VDeviceUserBindResultMap">
+  
+  select * from v_devices_user_bind_list 
+  where user_id=#{userId}
+  </select>
+</mapper>

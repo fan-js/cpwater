@@ -1,0 +1,49 @@
+package cn.ritac.mmbs.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesState;
+import cn.ritac.mmbs.web.dto.EventDto;
+import cn.ritac.mmbs.web.dto.convert.EventVO;
+import cn.ritac.mmbs.web.dto.convert.ProporVO;
+
+public interface DevicesService extends BaseService<Devices, Integer> {
+
+	/**
+	 * 得到设备列表
+	 * 
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	PageInfo<Devices> getDevices(String deviceNum, int pageIndex, int pageSize);
+
+	public DevicesState getUserDevicesState(int uid);
+
+	public void delBindUserDev(int device_id);
+
+	public List<Devices> findDeviceOfGroup(int groupId);
+
+	public List<Devices> findDeviceOfRole(Integer groupId, Integer roleId);
+
+	public List<ProporVO> deviceProporList();
+
+	public List<ProporVO> eventProporList();
+
+	PageInfo<EventVO> findEventList(EventDto eventDto);
+
+	// 封装ai , di , do , charts
+
+	public Map<String, Object> sendAi(int id);
+
+	public Map<String, Object> sendDi(int id);
+
+	public Map<String, Object> sendDo(int id);
+
+	public Map<String, Object> sendCharts(int id);
+
+}

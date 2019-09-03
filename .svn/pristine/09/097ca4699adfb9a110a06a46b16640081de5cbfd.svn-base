@@ -1,0 +1,391 @@
+package cn.ritac.mmbs.web.controller.api;
+
+import java.util.Date;
+import javax.validation.Valid;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.github.pagehelper.PageInfo;
+import cn.ritac.mmbs.mybatis.model.Devices;
+import cn.ritac.mmbs.mybatis.model.DevicesAI;
+import cn.ritac.mmbs.mybatis.model.DevicesDI;
+import cn.ritac.mmbs.mybatis.model.DevicesDo;
+import cn.ritac.mmbs.mybatis.model.DevicesReg;
+import cn.ritac.mmbs.mybatis.model.EventSetting;
+import cn.ritac.mmbs.mybatis.model.VDevicesDoRecList;
+import cn.ritac.mmbs.mybatis.model.VDevicesRegRecList;
+import cn.ritac.mmbs.service.DevicesAIService;
+import cn.ritac.mmbs.service.DevicesDIService;
+import cn.ritac.mmbs.service.DevicesDOService;
+import cn.ritac.mmbs.service.DevicesDoRecService;
+import cn.ritac.mmbs.service.DevicesEventRecService;
+import cn.ritac.mmbs.service.DevicesRegRecService;
+import cn.ritac.mmbs.service.DevicesRegService;
+import cn.ritac.mmbs.service.DevicesService;
+import cn.ritac.mmbs.service.EventSettingService;
+import cn.ritac.mmbs.service.UserDeviceBindService;
+import cn.ritac.mmbs.web.dto.DeviceBaseDto;
+import cn.ritac.mmbs.web.dto.DeviceDODTO;
+import cn.ritac.mmbs.web.dto.DeviceRegDto;
+import cn.ritac.mmbs.web.dto.EventSettingDto;
+import tk.mybatis.mapper.common.BaseMapper;
+
+@Controller
+@RequestMapping(value = "/devices")
+@ResponseBody
+public class DevicesController extends BaseController {
+	@Autowired
+	private DevicesService devicesService;
+	@Autowired
+	private DevicesAIService devicesAIService;
+	@Autowired
+	private DevicesDOService devicesDOService;
+	@Autowired
+	private DevicesDIService devicesDIService;
+	@Autowired
+	private DevicesRegService devicesRegService;
+
+	@Autowired
+	private EventSettingService eventSettingService;
+
+	@Autowired
+	private DevicesRegRecService devicesRegRecService;
+
+	@Autowired
+	private DevicesDoRecService devicesDoRecService;
+	
+	@Autowired
+	private DevicesEventRecService  devicesEventRecService;
+	/**
+	 * 得到设备数量
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	@RequestMapping("/getDeviceCount")
+	public String getDeviceCount() {
+		int deviceCount = devicesService.count(null);
+		return returnLogic.resultSuccess(deviceCount);
+
+	}
+
+	/**
+	 * 得到设备的基本信息
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	@RequestMapping("/getDeviceBase")
+	public String getDeviceBase(int deviceId, String deviceNum) {
+		Devices devices = new Devices();
+		devices.setDeviceNum(deviceNum);
+		devices.setId(deviceId);
+		return returnLogic.resultSuccess(devicesService.find(devices));
+	}
+
+	/**
+	 * 保存设备的基本信息
+	 * 
+	 * @param deviceBase
+	 * @return
+	 */
+	@RequestMapping("/saveDevice")
+	public String saveDevice(@Valid DeviceBaseDto deviceBase, BindingResult result) {
+
+		String returnMsg = returnLogic.defalutValidate(result);
+
+		if (result.hasErrors()) {
+			ModelMapper modelMapper = new ModelMapper();
+
+			Devices pojo = modelMapper.map(deviceBase, Devices.class);
+			if (deviceBase.getId() > 0) {
+
+				Devices devicesInfo = devicesService.findById(deviceBase.getId());
+				if (devicesInfo == null) {
+					return returnLogic.resultError("不存在该设备");
+				}
+				pojo.setUpdateTime(new Date());
+				devicesService.update(pojo);
+				return returnLogic.resultSuccess();
+			} else {
+
+				pojo.setCreateTime(new Date());
+				devicesService.save(pojo);
+				return returnLogic.resultSuccess();
+			}
+		}
+
+		return returnMsg;
+	}
+
+	/**
+	 * 删除设备
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	@RequestMapping("/deleteDevice")
+	public String deleteDevice(int deviceId) {
+
+		Devices deviceInfo = devicesService.findById(deviceId);
+
+		if (deviceInfo == null) {
+			return returnLogic.resultError("没有该设备,删除失败");
+		} else
+			//删除设备
+			devicesService.delete(new Integer[] { deviceId });
+			//删除绑定关系
+			devicesService.delBindUserDev(deviceId);
+		return returnLogic.resultSuccess();
+	}
+	
+	/**
+	 * 得到设备列表
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getDevices")
+	public String  getDevices(String deviceNum,int pageIndex,int pageSize)
+	{
+		return returnLogic.resultSuccess(devicesService.getDevices(deviceNum, pageIndex, pageSize));
+	}
+	
+
+
+	/**
+	 * 
+	 * @param 获取设备传感器信息
+	 * @return
+	 */
+	@RequestMapping("/getDeviceAI")
+	public String getDeviceAI(int deviceId) {
+		DevicesAI devicesAISearch = new DevicesAI();
+		devicesAISearch.setDeviceId(deviceId);
+
+		DevicesAI devicesAIInfo = devicesAIService.find(devicesAISearch);
+
+		if (devicesAIInfo == null) {
+			return returnLogic.resultError("未找到该设备的传感器信息");
+		}
+		return returnLogic.resultSuccess(devicesAIInfo);
+	}
+
+	/**
+	 * 
+	 * @param 获取设备开关量输出状态
+	 * @return
+	 */
+	@RequestMapping("/getDeviceDO")
+	public String getDeviceDO(int deviceId) {
+		DevicesDo devicesDoSearch = new DevicesDo();
+		devicesDoSearch.setDeviceId(deviceId);
+		return returnLogic.resultSuccess(devicesDOService.find(devicesDoSearch));
+	}
+
+	/**
+	 * 设置设备开关量输出状态
+	 * 
+	 * @param deviceDODTO
+	 * @return
+	 */
+	@RequestMapping("/saveDeviceDO")
+	public String saveDeviceDO(@Valid DeviceDODTO deviceDODTO, BindingResult result) {
+
+		String returnMsg = returnLogic.defalutValidate(result);
+		if (!result.hasErrors()) {
+			ModelMapper modelMapper = new ModelMapper();
+			DevicesDo pojo = modelMapper.map(deviceDODTO, DevicesDo.class);
+			if (deviceDODTO.getId() > 0) {
+
+				DevicesDo devicesDoInfo = devicesDOService.findById(deviceDODTO.getId());
+
+				if(devicesDoInfo==null)
+				{
+					return returnLogic.resultError("不存在该条记录");
+				}
+				pojo.setUpdateTime(new Date());
+				devicesDOService.update(pojo);
+			} else {
+				devicesDOService.save(pojo);
+			}
+			return returnLogic.resultSuccess();
+		}
+		return returnMsg;
+	}
+
+	/**
+	 * 
+	 * @param 获取设备工作状态
+	 * @return
+	 */
+	@RequestMapping("/getDeviceDI")
+	public String getDeviceDI(int deviceId) {
+
+		DevicesDI devicesDISearch = new DevicesDI();
+
+		devicesDISearch.setDeviceId(deviceId);
+
+		DevicesDI devicesDIInfo = devicesDIService.find(devicesDISearch);
+
+		if (devicesDIInfo == null) {
+			returnLogic.resultError("未找到该设备信息！");
+		}
+
+		return returnLogic.resultSuccess(devicesDIInfo);
+
+	}
+
+	/**
+	 * 获取设备配置参数
+	 * 
+	 * @param deviceId
+	 * @return
+	 */
+	@RequestMapping("/getDeviceReg")
+	public String getDeviceReg(int deviceId) {
+
+		DevicesReg devicesRegSearch = new DevicesReg();
+
+		devicesRegSearch.setDeviceId(deviceId);
+
+		
+		DevicesReg devicesRegInfo=devicesRegService.find(devicesRegSearch);
+		
+		
+		if(devicesRegInfo==null)
+		{
+			return returnLogic.resultError("没有该设备的配置参数");
+		}
+		return returnLogic.resultSuccess(devicesRegInfo);
+	}
+
+	/**
+	 * 设置设备配置参数
+	 * 
+	 * @param deviceReg
+	 * @return
+	 */
+	@RequestMapping("/saveDeviceReg")
+	public String saveDeviceReg(@Valid DeviceRegDto deviceReg, BindingResult result) {
+
+		String returnMsg = returnLogic.defalutValidate(result);
+
+		if (!result.hasErrors()) {
+			ModelMapper modelMapper = new ModelMapper();
+			DevicesReg pojo = modelMapper.map(deviceReg, DevicesReg.class);
+			if (deviceReg.getId() > 0) {
+				pojo.setUpdateTime(new Date());
+				devicesRegService.update(pojo);
+			} else {
+				devicesRegService.save(pojo);
+			}
+			return returnLogic.resultSuccess();
+		}
+		return returnMsg;
+	}
+
+	/**
+	 * 获取开关量输出状态记录
+	 * 
+	 * @param beginTime
+	 * @param endTime
+	 * @param userId
+	 * @param deviceId
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getDeviceRegRecord")
+	public String getDeviceRegRecord(String beginTime, String endTime, String userTel, String deviceNum,
+			int pageIndex, int pageSize) {
+
+		PageInfo<VDevicesRegRecList> pds = devicesRegRecService.getDeviceRegRecord(beginTime, endTime, userTel,
+				deviceNum, pageIndex, pageSize);
+
+		return returnLogic.resultSuccess(pds);
+
+	}
+
+	/**
+	 * 获取设备的配置参数记录
+	 * 
+	 * @param beginTime
+	 * @param endTime
+	 * @param userId
+	 * @param deviceId
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getDeviceDORecord")
+	public String getDeviceDORecord(String beginTime, String endTime, String userTel, String deviceNum,
+			int pageIndex, int pageSize) {
+
+		
+	
+		PageInfo<VDevicesDoRecList> pds = devicesDoRecService.getDeviceDoRecord(beginTime, endTime, userTel, deviceNum,
+				pageIndex, pageSize);
+		return returnLogic.resultSuccess(pds);
+	}
+
+	/**
+	 * 得到事件ID设置
+	 * 
+	 * @param eventId
+	 * @return
+	 */
+	@RequestMapping("/getEventSetting")
+	public String getEventSetting(int eventId) {
+		EventSetting eventSettingSearch = new EventSetting();
+		eventSettingSearch.setEventId(eventId);
+		return returnLogic.resultSuccess(eventSettingService.findList(eventSettingSearch));
+
+	}
+	
+	
+	/**
+	 * 得到事件列表
+	 * @param beginTime
+	 * @param endTime
+	 * @param deviceNum
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@RequestMapping("/getDeviceEventRecord")
+	public String getDeviceEventRecord(String beginTime, String endTime,  String deviceNum,
+			int pageIndex, int pageSize)
+	{
+	
+		return returnLogic.resultSuccess(	devicesEventRecService.getDeviceEventRecord(beginTime, endTime, deviceNum, pageIndex, pageSize));
+	
+	}
+	
+	/**
+	 * 设置事件配置
+	 * 
+	 * @param eventSetting
+	 * @return
+	 */
+	@RequestMapping("/saveEventSetting")
+	public String saveEventSetting(EventSettingDto eventSetting) {
+
+		return null;
+	}
+
+	/**
+	 * 得到指定用户名下设备总数、在线、离线
+	 * 
+	 * @param getUserDevicesState
+	 * @return
+	 */
+	@RequestMapping("/getUserDevicesState")
+	public String getUserDevicesState (int id) {
+		return returnLogic.resultSuccess(devicesService.getUserDevicesState(id));
+	}
+}
