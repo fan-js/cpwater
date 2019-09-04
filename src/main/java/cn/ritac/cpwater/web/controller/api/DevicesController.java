@@ -150,9 +150,9 @@ public class DevicesController extends BaseController {
 	@RequestMapping("/bind")
 	public String bindUser(@RequestBody DeviceAndUserDto deviceAndUserDto) {
 		Subject subject = SecurityUtils.getSubject();
-//		if (!subject.isAuthenticated()) {
-//			return returnLogic.resultErrorJsonString(401, "请先登录！");
-//		}
+		if (!subject.isAuthenticated()) {
+			return returnLogic.resultErrorJsonString(401, "请先登录！");
+		}
 		if (StringUtils.isEmpty(deviceAndUserDto)) {
 			return returnLogic.resultErrorJsonString(206, "参数错误。");
 		}

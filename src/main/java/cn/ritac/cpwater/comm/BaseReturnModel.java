@@ -52,11 +52,12 @@ public class BaseReturnModel {
 	}
 
 //刷登录给接口
-	public String resultJsonLogin(int status, String msg, String token) {
+	public String resultJsonLogin(int status, String msg, String token,Object data) {
 		JSONObject result = new JSONObject();
 		result.put("status", status);
 		result.put("msg", msg);
 		result.put("token", token);
+		result.put("data",data);
 		return JSONObject.toJSONString(result, SerializerFeature.WriteNullListAsEmpty,
 				SerializerFeature.WriteDateUseDateFormat, SerializerFeature.WriteNullStringAsEmpty,
 				SerializerFeature.WriteNullNumberAsZero, SerializerFeature.WriteNullBooleanAsFalse);
@@ -65,7 +66,7 @@ public class BaseReturnModel {
 	/**
 	 * 接口成功返回方法
 	 * 
-	 * @param data 返回业务数据
+	 * @param
 	 * @return
 	 */
 //	public String resultSuccess(Object data) {

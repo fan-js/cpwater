@@ -48,7 +48,7 @@ public class SendMassage{
         SMSPayload payload = SMSPayload.newBuilder()
                 .setMobileNumber(phone)
                 .setTempId(168984)
-                // .setSignId(1380)
+                // .setSignId(1380)169113
                 //多参数时使用
                 // .setTempPara(test)
                 .addTempPara("msg", news)

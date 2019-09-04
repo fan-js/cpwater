@@ -1094,9 +1094,7 @@ public class MQTTServiceImpl implements MQTTService {
 				//this.analyseEvent(devicesInfo, eventItem);
 				dau.setDeviceId(Integer.parseInt(devicesInfo.getDeviceNum()));
 				DeviceAndUser deviceAndUser=deviceAndUserService.find(dau);
-				u.setId(deviceAndUser.getUserId());
-				Users result=usersService.find(u);
-				String phone=result.getTelephone();
+				String phone=deviceAndUser.getUserPhone();
 				sm.sendNoticeSMS(phone,eventData.getDeviceID()+"号设备，在"+eventItem.getEventTime()+"出现"+eventItem.getEventContent()+"异常");
 
 

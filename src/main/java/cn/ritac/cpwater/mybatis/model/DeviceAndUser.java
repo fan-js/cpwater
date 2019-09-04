@@ -27,6 +27,21 @@ public class DeviceAndUser implements Serializable {
     @Column(name = "user_id")
     private Integer userId;
 
+    /**
+     * 用户id
+     * */
+    @Column(name = "user_phone")
+    private String userPhone;
+
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
     @Column(name = "update_time")
     private Date updateTime;
 
