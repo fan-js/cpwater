@@ -103,7 +103,7 @@ public class UserController extends BaseController {
 			usersService.update(userExtis);
 		}
 		String token = JWTUtil.sign(userName, pwd, -1);
-		return returnLogic.resultJsonLogin(200, "登录成功！", token);
+		return returnLogic.resultJsonLogin(200, "登录成功！", token,userExtis);
 
 	}
 

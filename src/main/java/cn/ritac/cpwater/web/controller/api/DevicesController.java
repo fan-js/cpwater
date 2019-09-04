@@ -147,12 +147,12 @@ public class DevicesController extends BaseController {
 	 * @param
 	 * @param
 	 */
-	@PostMapping("/bind")
+	@RequestMapping("/bind")
 	public String bindUser(@RequestBody DeviceAndUserDto deviceAndUserDto) {
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(deviceAndUserDto)) {
 			return returnLogic.resultErrorJsonString(206, "参数错误。");
 		}
@@ -172,6 +172,7 @@ public class DevicesController extends BaseController {
 		Date updateTime=new Date();
 		dau.setDeviceId(deviceAndUserDto.getDeviceId());
 		dau.setUserId(deviceAndUserDto.getUserId());
+		dau.setUserPhone(deviceAndUserDto.getUserPhone());
 		dau.setUpdateTime(updateTime);
 		deviceAndUserService.save(dau);
 		return returnLogic.resultErrorJsonString(206, "设备绑定成功。");
