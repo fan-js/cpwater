@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import cn.jsms.api.SendSMSResult;
 import cn.jsms.api.ValidSMSResult;
 import cn.jsms.api.common.SMSClient;
 import cn.ritac.cpwater.comm.MessageTemplateTypeEnum;
@@ -94,6 +95,7 @@ public class UserController extends BaseController {
 		searchUser.setTelephone(userName);
 		// searchUser.setUser_state(true);
 		Users userExtis = usersService.find(searchUser);
+		//userExtis.setPwd("");
 		if (StringUtils.isEmpty(userExtis)) {
 			return returnLogic.resultErrorJsonString(206, "账户、密码输入有误或账户不可用。");
 		}
@@ -116,25 +118,27 @@ public class UserController extends BaseController {
 
 	@PutMapping("/forgetPwd")
 	public String forgetPwd(@RequestBody UserDto user, HttpServletRequest request) {
+		//限制用户忘记密码重置密码的次数
+
 		String telephone = user.getTelephone();
 		String code = user.getCheckCode();
-		String new_pwd = user.getNew_pwd();
+		String new_pwd = user.getNewPwd();
+		String regId=user.getMsgId();
 		String pwd = MD5CheckFile.getMD5String(new_pwd);
-		HttpSession session = request.getSession();
-		String send_code = session.getAttribute(telephone) == null ? "" : session.getAttribute(telephone).toString();
 		boolean telPass = Pattern.matches(telPattern, telephone);
 		if (!telPass) {
 			return returnLogic.resultErrorJsonString(206, "手机号码不正确。");
 		}
-		if (StringUtils.isEmpty(code)) {
-			return returnLogic.resultErrorJsonString(206, "请输入验证码!");
-		}
-		if (StringUtils.isEmpty(send_code)) {
-			return returnLogic.resultErrorJsonString(206, "未获取到系统发送的验证码!");
-		}
-		if (!code.equals(send_code)) {
-			return returnLogic.resultErrorJsonString(206, "验证码输入错误!");
-		}
+		//验证码验证
+				KetSecret ks=new KetSecret();
+				SMSClient client = new SMSClient(ks.getMASTER_SECRET(), ks.getAPP_KEY());
+					try{
+					//发送验证码，注意一点。这个假如验证码错误就直接报错了
+					ValidSMSResult res = client.sendValidSMSCode(regId ,code);
+					//return returnLogic.resultErrorJsonString(200, "验证码正确!");
+				} catch (Exception e) {
+					return returnLogic.resultErrorJsonString(500, "请输入正确的验证码!");
+				}
 		Users userSearch = new Users();
 		userSearch.setTelephone(telephone);
 		// 找到对象
@@ -144,7 +148,7 @@ public class UserController extends BaseController {
 			usersService.update(userInfo);
 			return returnLogic.resultJson(200, "密码修改成功。");
 		}
-		return returnLogic.resultErrorJsonString(206, "该手机号未绑定用户");
+		return returnLogic.resultErrorJsonString(206, "手机号码不正确");
 	}
 
 	/**
@@ -199,7 +203,7 @@ public class UserController extends BaseController {
 	 * @return msg
 	 */
 	@GetMapping("/sendCheckCode")
-	public String sengCode(String telephone, HttpServletRequest request) {
+	public String sengCode(String telephone) {
 		SendMassage sendMassage=new SendMassage();
 		// 生成随机验证码
 		//String code = MessageGenerate.CreateRandom();
@@ -213,8 +217,17 @@ public class UserController extends BaseController {
 //		sessionId.append(telephone);
 //		// 登录用户放入session
 //		session.setAttribute(sessionId.toString(), code);
-		sendMassage.sendSMS(telephone);
-		return returnLogic.resultJson(200, "验证码已发送。");
+
+		//认证手机号是否存在
+		Users users=new Users();
+		users.setTelephone(telephone);
+		Users u=usersService.find(users);
+		if(StringUtils.isEmpty(u)){
+			return returnLogic.resultErrorJsonString(206, "用户不存在。");
+		}
+
+		SendSMSResult res=sendMassage.sendSMS(telephone);
+		return returnLogic.resultJsonString(200, "验证码已发送。",res.getMessageId());
 	}
 
 	/***
@@ -258,7 +271,7 @@ public class UserController extends BaseController {
 	}
 
 	/**
-	 * 保存修改用户
+	 * 保存修改用户/注册
 	 * 
 	 * @param user
 	 * @param result
@@ -312,33 +325,33 @@ public class UserController extends BaseController {
 				// 如果传入dto用户主键大于0则为修改 ; 否则为注册
 				// 用户注册
 				if (userExit != null) {
-					return returnLogic.resultErrorJsonString(206, "该手机号已经绑定!");
+					return returnLogic.resultErrorJsonString(206, "该手机号已经注册!");
 				}
-				// 获取用户输入的验证码
-				String regId=user.getMsgId();
-				String code = user.getCheckCode();
-				if (StringUtils.isEmpty(code)) {
-					return returnLogic.resultErrorJsonString(206, "请输入验证码!");
-				}
-				//验证码验证
-				KetSecret ks=new KetSecret();
-				SMSClient client = new SMSClient(ks.getMASTER_SECRET(), ks.getAPP_KEY());
-					try{
-					//发送验证码，注意一点。这个假如验证码错误就直接报错了
-					ValidSMSResult res = client.sendValidSMSCode(regId ,code);
-					//return returnLogic.resultErrorJsonString(200, "验证码正确!");
-				} catch (Exception e) {
-					return returnLogic.resultErrorJsonString(500, "请输入正确的验证码!");
-				}
+//				// 获取用户输入的验证码
+//				String regId=user.getMsgId();
+//				String code = user.getCheckCode();
+//				if (StringUtils.isEmpty(code)) {
+//					return returnLogic.resultErrorJsonString(206, "请输入验证码!");
+//				}
+//				//验证码验证
+//				KetSecret ks=new KetSecret();
+//				SMSClient client = new SMSClient(ks.getMASTER_SECRET(), ks.getAPP_KEY());
+//					try{
+//					//发送验证码，注意一点。这个假如验证码错误就直接报错了
+//					ValidSMSResult res = client.sendValidSMSCode(regId ,code);
+//					//return returnLogic.resultErrorJsonString(200, "验证码正确!");
+//				} catch (Exception e) {
+//					return returnLogic.resultErrorJsonString(500, "请输入正确的验证码!");
+//				}
 
 				// 用户名默认为手机号码
-				pojo.setUserAccount(user.getTelephone());
+				//pojo.setUserAccount(user.getTelephone());
 				pojo.setTelephone(user.getTelephone());
 				pojo.setPwd(pwd);
 				pojo.setCreateTime(new Date());
 				// 保存用户
 				usersService.save(pojo);
-				return returnLogic.resultJson(200, "注册成功 !");
+				return returnLogic.resultJson(200, "添加账号成功 !");
 			}
 		}
 		return returnLogic.resultErrorJsonString(206, returnMsg);
