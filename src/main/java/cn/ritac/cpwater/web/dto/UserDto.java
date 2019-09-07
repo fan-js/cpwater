@@ -106,11 +106,11 @@ public class UserDto {
 	}
 
 	public String getNew_pwd() {
-		return new_pwd;
+		return newPwd;
 	}
 
 	public void setNew_pwd(String new_pwd) {
-		this.new_pwd = new_pwd;
+		this.newPwd = newPwd;
 	}
 
 	public String getUser_name() {
@@ -139,6 +139,16 @@ public class UserDto {
 
 	private String user_name;
 
+	private String userAccount;
+
+	public String getUserAccount() {
+		return userAccount;
+	}
+
+	public void setUserAccount(String userAccount) {
+		this.userAccount = userAccount;
+	}
+
 	@NotEmpty(message = "密码不能为空!")
 	@Length(min = 5, max = 30, message = "密码必须在6-30位!")
 	private String pwd;
@@ -147,6 +157,7 @@ public class UserDto {
 	private String telephone;
 
 	private DateTime createTime;
+
 	@NotEmpty(message = "验证码不能为空")
 	private String checkCode;
 
@@ -164,7 +175,7 @@ public class UserDto {
 
 	private String user_sex;
 	@NotEmpty(message = "密码没有填写!")
-	private String new_pwd;
+	private String newPwd;
 
 	private int pageIndex;
 	private int pageSize;
@@ -190,4 +201,21 @@ public class UserDto {
 		this.msgId = regId;
 	}
 
+private String getNewPwd;
+
+	public String getNewPwd() {
+		return newPwd;
+	}
+
+	public void setNewPwd(String newPwd) {
+		this.newPwd = newPwd;
+	}
+
+	public String getGetNewPwd() {
+		return getNewPwd;
+	}
+
+	public void setGetNewPwd(String getNewPwd) {
+		this.getNewPwd = getNewPwd;
+	}
 }

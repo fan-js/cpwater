@@ -6,11 +6,12 @@ import java.util.Date;
 
 /**
  * @Author:FanJS
- * @Date:2019-8-30 8:45
+ * @Date:2019-9-6 19:11
  */
 
-@Table(name = "cpwater_device_user")
-public class DeviceAndUser implements Serializable {
+@Table(name = "cpwater_device_camera")
+public class DeviceCamera implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
     private Integer id;
@@ -20,28 +21,14 @@ public class DeviceAndUser implements Serializable {
      * */
     @Column(name = "device_num")
     private Integer deviceNum;
-
     /**
-     * 用户id
+     * 播放地址
      * */
-    @Column(name = "user_id")
-    private Integer userId;
-
+    @Column(name = "url")
+    private String url;
     /**
-     * 用户id
+     * 添加时间
      * */
-    @Column(name = "user_phone")
-    private String userPhone;
-
-
-    public String getUserPhone() {
-        return userPhone;
-    }
-
-    public void setUserPhone(String userPhone) {
-        this.userPhone = userPhone;
-    }
-
     @Column(name = "update_time")
     private Date updateTime;
 
@@ -61,12 +48,12 @@ public class DeviceAndUser implements Serializable {
         this.deviceNum = deviceNum;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public String getUrl() {
+        return url;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public Date getUpdateTime() {
@@ -76,6 +63,4 @@ public class DeviceAndUser implements Serializable {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
-
-
 }

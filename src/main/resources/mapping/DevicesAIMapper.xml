@@ -30,7 +30,7 @@
 			,temper temp
 			,humidity hum
 			,illuminance ill
-			,ups_voltage
+			,press
 			,ups_surpluscapacity_ma
 			,ups_surpluscapacity_per
 		FROM cpwater_devices_ai_rec

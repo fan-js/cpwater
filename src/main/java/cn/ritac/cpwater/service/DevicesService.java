@@ -3,6 +3,7 @@ package cn.ritac.cpwater.service;
 import java.util.List;
 import java.util.Map;
 
+import cn.ritac.cpwater.web.dto.DevicesDto;
 import com.github.pagehelper.PageInfo;
 import cn.ritac.cpwater.mybatis.model.Devices;
 import cn.ritac.cpwater.mybatis.model.DevicesState;
@@ -63,8 +64,9 @@ public interface DevicesService extends BaseService<Devices, Integer> {
 
 	public List<ContVoltnetPojo> countVoltnetPropor();
 
-	public PageInfo<Devices> findDeviceByCondition(int pageIndex, int pageSize, String devNum, String devModel,
-			String devPosit, String devRemark, Boolean on_line, Integer groupId);
+	public PageInfo<DevicesDto> findDeviceByCondition(int pageIndex, int pageSize);
+
+	public PageInfo<DevicesDto> findDeviceByUser(int pageIndex, int pageSize, String telePhone);
 
 	public List<Devices> getDevicesNoPage();
 

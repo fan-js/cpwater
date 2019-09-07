@@ -899,31 +899,7 @@ public class MQTTServiceImpl implements MQTTService {
 						// 删除原有设备do信息
 						// devicesDoMapper.delete(devicesDo);
 						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDout())))
-							devicesDo.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 电磁锁状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(2, data.getMsgData().getDout())))
-							devicesDo.setLight((boolean) getDoBooleanValue(2, data.getMsgData().getDout()));// 照明灯
-						if (!StringUtils.isEmpty(getDoBooleanValue(3, data.getMsgData().getDout())))
-							devicesDo.setFan((boolean) getDoBooleanValue(3, data.getMsgData().getDout()));// 风扇
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDout())))
-							devicesDo.setHeating((boolean) getDoBooleanValue(4, data.getMsgData().getDout()));// 加热器
-						if (!StringUtils.isEmpty(getDoBooleanValue(5, data.getMsgData().getDout())))
-							devicesDo.setBeep((boolean) getDoBooleanValue(5, data.getMsgData().getDout()));// 蜂鸣器
-						if (!StringUtils.isEmpty(getDoBooleanValue(6, data.getMsgData().getDout())))
-							devicesDo.setReclosState((boolean) getDoBooleanValue(6, data.getMsgData().getDout()));// 自动重合闸状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(7, data.getMsgData().getDout())))
-							devicesDo.setRelayState_1((boolean) getDoBooleanValue(7, data.getMsgData().getDout()));// ONU
-						if (!StringUtils.isEmpty(getDoBooleanValue(8, data.getMsgData().getDout())))
-							devicesDo.setRelayState_2((boolean) getDoBooleanValue(8, data.getMsgData().getDout()));// 交换机
-						if (!StringUtils.isEmpty(getDoBooleanValue(9, data.getMsgData().getDout())))
-							devicesDo.setRelayState_3((boolean) getDoBooleanValue(9, data.getMsgData().getDout()));// 摄相机1
-						if (!StringUtils.isEmpty(getDoBooleanValue(10, data.getMsgData().getDout())))
-							devicesDo.setRelayState_4((boolean) getDoBooleanValue(10, data.getMsgData().getDout()));// 摄相机2
-						if (!StringUtils.isEmpty(getDoBooleanValue(11, data.getMsgData().getDout())))
-							devicesDo.setRelayState_5((boolean) getDoBooleanValue(11, data.getMsgData().getDout()));// 继电器5状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(12, data.getMsgData().getDout())))
-							devicesDo.setRelayState_6((boolean) getDoBooleanValue(12, data.getMsgData().getDout()));// 继电器6状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(13, data.getMsgData().getDout())))
-							devicesDo.setWaringSilencing((boolean) getDoBooleanValue(13, data.getMsgData().getDout()));// 报警器消音
+							devicesDo.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 水泵状态
 
 						devicesDo.setUpdateTime(updateTime);
 						/* 插入最新do状态 */
@@ -936,31 +912,7 @@ public class MQTTServiceImpl implements MQTTService {
 						DevicesDoRec dor = new DevicesDoRec();
 						dor.setDeviceId(deviceId);
 						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDout())))
-							dor.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 电磁锁状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(2, data.getMsgData().getDout())))
-							dor.setLight((boolean) getDoBooleanValue(2, data.getMsgData().getDout()));// 照明灯
-						if (!StringUtils.isEmpty(getDoBooleanValue(3, data.getMsgData().getDout())))
-							dor.setFan((boolean) getDoBooleanValue(3, data.getMsgData().getDout()));// 风扇
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDout())))
-							dor.setHeating((boolean) getDoBooleanValue(4, data.getMsgData().getDout()));// 加热器
-						if (!StringUtils.isEmpty(getDoBooleanValue(5, data.getMsgData().getDout())))
-							dor.setBeep((boolean) getDoBooleanValue(5, data.getMsgData().getDout()));// 蜂鸣器
-						if (!StringUtils.isEmpty(getDoBooleanValue(6, data.getMsgData().getDout())))
-							dor.setReclosState((boolean) getDoBooleanValue(6, data.getMsgData().getDout()));// 自动重合闸状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(7, data.getMsgData().getDout())))
-							dor.setRelayState_1((boolean) getDoBooleanValue(7, data.getMsgData().getDout()));// ONU
-						if (!StringUtils.isEmpty(getDoBooleanValue(8, data.getMsgData().getDout())))
-							dor.setRelayState_2((boolean) getDoBooleanValue(8, data.getMsgData().getDout()));// 交换机
-						if (!StringUtils.isEmpty(getDoBooleanValue(9, data.getMsgData().getDout())))
-							dor.setRelayState_3((boolean) getDoBooleanValue(9, data.getMsgData().getDout()));// 摄相机1
-						if (!StringUtils.isEmpty(getDoBooleanValue(10, data.getMsgData().getDout())))
-							dor.setRelayState_4((boolean) getDoBooleanValue(10, data.getMsgData().getDout()));// 摄相机2
-						if (!StringUtils.isEmpty(getDoBooleanValue(11, data.getMsgData().getDout())))
-							dor.setRelayState_5((boolean) getDoBooleanValue(11, data.getMsgData().getDout()));// 继电器5状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(12, data.getMsgData().getDout())))
-							dor.setRelayState_6((boolean) getDoBooleanValue(12, data.getMsgData().getDout()));// 继电器6状态
-						if (!StringUtils.isEmpty(getDoBooleanValue(13, data.getMsgData().getDout())))
-							dor.setWaringSilencing((boolean) getDoBooleanValue(13, data.getMsgData().getDout()));// 报警器消音
+							dor.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 水泵状态
 
 						dor.setUpdateTime(updateTime);
 						/* 插入do状态记录表 */
@@ -1092,7 +1044,7 @@ public class MQTTServiceImpl implements MQTTService {
 				// 根据事件内容,更新设备表 电源状态/连接状态 sn--1; Content{mainPower-主电源;UPS-变为UPS
 				// ;mobile-移动网络;LAN-LAN口通信 }
 				//this.analyseEvent(devicesInfo, eventItem);
-				dau.setDeviceId(Integer.parseInt(devicesInfo.getDeviceNum()));
+				dau.setDeviceNum(Integer.parseInt(devicesInfo.getDeviceNum()));
 				DeviceAndUser deviceAndUser=deviceAndUserService.find(dau);
 				String phone=deviceAndUser.getUserPhone();
 				sm.sendNoticeSMS(phone,eventData.getDeviceID()+"号设备，在"+eventItem.getEventTime()+"出现"+eventItem.getEventContent()+"异常");

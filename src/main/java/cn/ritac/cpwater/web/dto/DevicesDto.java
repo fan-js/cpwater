@@ -6,6 +6,16 @@ import java.util.Date;
 public class DevicesDto implements Serializable {
 	private Integer id;
 
+	private String userphone;
+
+	public String getUserphone() {
+		return userphone;
+	}
+
+	public void setUserphone(String userphone) {
+		this.userphone = userphone;
+	}
+
 	private Integer groupId;
 
 	private Date createTime;

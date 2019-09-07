@@ -4,18 +4,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import cn.jsms.api.SendSMSResult;
 import cn.jsms.api.ValidSMSResult;
 import cn.jsms.api.common.SMSClient;
-import cn.ritac.cpwater.comm.MessageTemplateTypeEnum;
+import cn.ritac.cpwater.mybatis.model.Check;
 import cn.ritac.cpwater.sendMassage.KetSecret;
 import cn.ritac.cpwater.sendMassage.SendMassage;
+import cn.ritac.cpwater.service.CheckService;
+import cn.ritac.cpwater.web.dto.CheckDto;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.modelmapper.ModelMapper;
@@ -34,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import com.github.pagehelper.PageInfo;
-import cn.ritac.cpwater.comm.MessageGenerate;
 import cn.ritac.cpwater.mybatis.model.Roles;
 import cn.ritac.cpwater.mybatis.model.Users;
 import cn.ritac.cpwater.service.RolesService;
@@ -64,6 +65,9 @@ public class UserController extends BaseController {
 	private String UPLOAD_FOLDER;
 	@Autowired
 	private UsersService usersService;
+
+	@Autowired
+	private CheckService checkService;
 
 	@Autowired
 	private HttpServletRequest httpServletRequest;
@@ -118,8 +122,14 @@ public class UserController extends BaseController {
 
 	@PutMapping("/forgetPwd")
 	public String forgetPwd(@RequestBody UserDto user, HttpServletRequest request) {
-		//限制用户忘记密码重置密码的次数
-
+		//限制用户忘记密码重置密码的次数3次
+		CheckDto checkDto=MonitoringAuthority(user.getTelephone(),"重置密码");
+		if(checkDto.getMsg()!=null&&checkDto.getMsg()!=""){
+			return returnLogic.resultErrorJsonString(206, checkDto.getMsg());
+		}
+		if(checkDto.getResult()){
+			return returnLogic.resultErrorJsonString(206, "修改次数超限.请次日修改!");
+		}
 		String telephone = user.getTelephone();
 		String code = user.getCheckCode();
 		String new_pwd = user.getNewPwd();
@@ -150,6 +160,32 @@ public class UserController extends BaseController {
 		}
 		return returnLogic.resultErrorJsonString(206, "手机号码不正确");
 	}
+
+
+	//控制天重置密码和修改密码次数
+		public CheckDto MonitoringAuthority(String phone, String type){
+		CheckDto checkDto=new CheckDto();
+			checkDto.setResult(false);
+			//检验用户当日重置密码和修改的次数
+			SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
+			Check check=new Check();
+			String format = sdf.format(new Date());
+			check.setPhone(phone);
+			check.setDateTime(format);
+			check.setType(type);
+			int num=checkService.count(check);
+			if(num==1) {
+				checkDto.setMsg("请输入正确的验证码!还有一次修改机会,请谨慎操作!");
+			}
+			if(num>=3){
+			checkDto.setResult(true);
+			return checkDto;
+			}
+			//没超过限定次数，进行插入操作
+			checkService.save(check);
+			//还有一次修改机会进行提示
+			return checkDto;
+		}
 
 	/**
 	 * 修改密码
@@ -271,7 +307,7 @@ public class UserController extends BaseController {
 	}
 
 	/**
-	 * 保存修改用户/注册
+	 * 保存修改用户
 	 * 
 	 * @param user
 	 * @param result
@@ -285,9 +321,9 @@ public class UserController extends BaseController {
 			if (user.getId() > 0) {
 				// 首先，检测用户登录状态；
 				Subject subject = SecurityUtils.getSubject();
-				if (!subject.isAuthenticated()) {
-					return returnLogic.resultErrorJsonString(401, "请先登录！");
-				}
+//				if (!subject.isAuthenticated()) {
+//					return returnLogic.resultErrorJsonString(401, "请先登录！");
+//				}
 				String tk = httpServletRequest.getHeader("Authorization") == null ? ""
 						: httpServletRequest.getHeader("Authorization");
 				// 电话号码
@@ -300,7 +336,7 @@ public class UserController extends BaseController {
 				Users userInfo = usersService.findById(user.getId());
 				userInfo.setHead_portrait(user.getHead_portrait());
 				userInfo.setUser_company(user.getUser_company());
-				userInfo.setUserAccount(user.getUser_name());
+				userInfo.setUserAccount(user.getUserAccount());
 				userInfo.setUser_sex(user.getUser_sex());
 				userInfo.setUser_department(user.getUser_department());
 				userInfo.setUser_address(user.getUser_address());
@@ -312,6 +348,12 @@ public class UserController extends BaseController {
 				return returnLogic.resultJson(200, "修改成功。");
 
 			} else {
+				String telephone=user.getTelephone();
+				boolean telPass = Pattern.matches(telPattern, telephone);
+				if (StringUtils.isEmpty(telephone) || !telPass) {
+					return returnLogic.resultErrorJsonString(206, "请输入正确的手机号码。");
+				}
+
 				// 用户注册不需要鉴权
 				ModelMapper modelMapper = new ModelMapper();
 				// 映射dto属性到java对象
@@ -345,7 +387,7 @@ public class UserController extends BaseController {
 //				}
 
 				// 用户名默认为手机号码
-				//pojo.setUserAccount(user.getTelephone());
+				//pojo.setUserAccount(user.getUserAccount());
 				pojo.setTelephone(user.getTelephone());
 				pojo.setPwd(pwd);
 				pojo.setCreateTime(new Date());
@@ -354,6 +396,7 @@ public class UserController extends BaseController {
 				return returnLogic.resultJson(200, "添加账号成功 !");
 			}
 		}
+
 		return returnLogic.resultErrorJsonString(206, returnMsg);
 	}
 
@@ -427,13 +470,13 @@ public class UserController extends BaseController {
 	@RequestMapping("/findUser")
 	public String findUser(UserDto user) {
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		String telephone = user.getTelephone();
 		int pageIndex = user.getPageIndex();
 		int pageSize = user.getPageSize();
-		PageInfo<RUsers> userList = usersService.getUsers(telephone, pageSize, pageIndex);
+		PageInfo<RUsers> userList = usersService.getUsers(telephone,pageSize, pageIndex);
 		return returnLogic.resultJsonString(206, "查询列表成功 !", userList);
 
 	}

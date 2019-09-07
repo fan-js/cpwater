@@ -36,7 +36,17 @@ public class Users implements Serializable {
 
 	private String user_sex;
 
+	private String type;
+
 	private static final long serialVersionUID = 1L;
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 
 	/**
 	 * @return id

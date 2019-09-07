@@ -73,6 +73,72 @@
 		<result column="onnum" jdbcType="INTEGER" property="onnum" />
 		<result column="offnum" jdbcType="INTEGER" property="offnum" />
 	</resultMap>
+	<resultMap id="DevicesDto"
+			   type="cn.ritac.cpwater.web.dto.DevicesDto">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="create_time" jdbcType="TIMESTAMP"
+				property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP"
+				property="updateTime" />
+		<result column="device_num" jdbcType="VARCHAR"
+				property="deviceNum" />
+		<result column="device_key" jdbcType="VARCHAR"
+				property="deviceKey" />
+		<result column="device_model" jdbcType="VARCHAR"
+				property="deviceModel" />
+		<result column="user_phone" jdbcType="VARCHAR"
+				property="userphone" />
+		<result column="longitude" jdbcType="VARCHAR"
+				property="longitude" />
+		<result column="dimension" jdbcType="VARCHAR"
+				property="dimension" />
+		<result column="position_des" jdbcType="VARCHAR"
+				property="positionDes" />
+		<result column="online" jdbcType="BIT" property="online" />
+		<result column="online_time" jdbcType="TIMESTAMP"
+				property="onlineTime" />
+		<result column="offline_time" jdbcType="TIMESTAMP"
+				property="offlineTime" />
+		<result column="device_version" jdbcType="VARCHAR"
+				property="deviceVersion" />
+		<result column="soft_version" jdbcType="VARCHAR"
+				property="softVersion" />
+		<result column="isFault" jdbcType="BIT" property="isfault" />
+		<result column="remark" jdbcType="VARCHAR" property="remark" />
+		<result column="slaveEntry" jdbcType="INTEGER"
+				property="slaveentry" />
+		<result column="slaveIDs" jdbcType="VARCHAR"
+				property="slaveids" />
+		<result column="voltage" jdbcType="REAL" property="voltage" />
+		<result column="current" jdbcType="REAL" property="current" />
+		<result column="firstLink" jdbcType="INTEGER"
+				property="firstlink" />
+		<result column="connForm" jdbcType="INTEGER"
+				property="connform" />
+		<result column="signalQuality" jdbcType="INTEGER"
+				property="signalquality" />
+		<result column="workingHours" jdbcType="BIGINT"
+				property="workinghours" />
+		<result column="networkingHours" jdbcType="BIGINT"
+				property="networkinghours" />
+		<result column="restartCount" jdbcType="INTEGER"
+				property="restartcount" />
+		<result column="keepAliveInterval" jdbcType="INTEGER"
+				property="keepaliveinterval" />
+		<result column="dataUpTime" jdbcType="INTEGER"
+				property="datauptime" />
+		<result column="firstServer" jdbcType="INTEGER"
+				property="firstserver" />
+		<result column="cpuTemper" jdbcType="INTEGER" property="cputemper" />
+		<result column="ramProportion" jdbcType="INTEGER"
+				property="ramproportion" />
+		<result column="romProportion" jdbcType="INTEGER"
+				property="romproportion" />
+		<result column="cpuProportion" jdbcType="INTEGER"
+				property="cpuproportion" />
+		<result column="img" jdbcType="VARCHAR" property="img" />
+		<result column="groupName" jdbcType="VARCHAR" property="groupName" />
+	</resultMap>
 
 	<select id="getDevice" resultMap="BaseResultMap">
 		select * from cpwater_devices
@@ -231,34 +297,21 @@
 			) k ORDER BY k.create_time DESC
 	</select>
 	
-	<select id="findDeviceByCondition" resultMap="BaseResultMap">
+	<select id="findDeviceByCondition" resultMap="DevicesDto">
+		SELECT
+			dev.*,cdu.user_phone
+			FROM cpwater_devices dev
+			left join cpwater_device_user cdu on dev.device_num = cdu.device_num
+			where 1=1
+	</select>
+
+	<select id="findDeviceByUser" resultMap="BaseResultMap">
 		SELECT
 			dev.*
-			,a.img_url img
-			,g.group_name groupName
 			FROM cpwater_devices dev
-			LEFT JOIN cpwater_group_device gd ON dev.id = gd.device_id
-			LEFT JOIN cpwater_group g ON gd.group_id = g.id
-			LEFT JOIN cpwater_assets a ON dev.device_num = a.device_num
+			LEFT JOIN cpwater_device_user cdu ON dev.device_num = cdu.device_num
 			where 1=1
-		<if test="devNum != null and devNum != ''">
-			AND dev.device_num = #{devNum}
-		</if>
-		<if test="devModel != null and devModel != ''">
-			AND dev.device_model = #{devModel}
-		</if>	
-		<if test="devPosit != null and devPosit != ''">
-			AND dev.position_des LIKE CONCAT('%',#{devPosit},'%')
-		</if>	
-		<if test="devRemark != null and devRemark != ''">
-			AND dev.remark = #{devRemark}
-		</if>	
-		<if test="on_line != null">
-			AND dev.`online` = #{on_line}
-		</if>	
-		<if test="groupId!=null and groupId > 0 ">	
-			AND gd.group_id = #{groupId}
-		</if>
+			AND cdu.user_phone = #{telePhone}
 	</select>
 	<select id="getDevicesNoPage" resultMap="BaseResultMap">
 		SELECT

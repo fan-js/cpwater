@@ -30,7 +30,7 @@
   select * from cpwater_users
   
   <where>
-   user_state = 1
+   1=1
   <if test="telephone!=null and telephone!=''">
    	 and telephone=#{telephone}
   </if>

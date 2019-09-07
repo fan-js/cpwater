@@ -69,12 +69,17 @@ public class DevicesController extends BaseController {
 	@Autowired
 	private DevicesService devicesService;
 	@Autowired
+	private UsersService usersService;
+	@Autowired
 	private DevicesAIService devicesAIService;
 	@Autowired
 	private DevicesRegService devicesRegService;
 
 	@Autowired
 	private DeviceAndUserService deviceAndUserService;
+
+	@Autowired
+	private DeviceCameraService deviceCameraService;
 
 	@Autowired
 	private HttpServletRequest httpServletRequest;
@@ -110,22 +115,17 @@ public class DevicesController extends BaseController {
 	@PostMapping("/getDevices")
 	public String getDevices(@RequestBody DevicesDto devDto) {
 		// 首先，检测用户登录状态；
-		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
 				: httpServletRequest.getHeader("Authorization");
 		// 电话号码
 		String userName = JWTUtil.getUsername(tk);
-		if (StringUtils.isEmpty(userName)) {
-			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
-		}
-		/*	int roleId = r.getId();
-			DeviceFuction df = devicesFunctionService.findDeviceFunctionByRoleId(roleId);
-			if (StringUtils.isEmpty(df) || (!StringUtils.isEmpty(df.getListDevice()) && !df.getListDevice())) {
-				return returnLogic.resultErrorJsonString(403, "执行失败，当前用户无权操作。");
-			}*/
+//		if (StringUtils.isEmpty(userName)) {
+//			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
+//		}
 		if (StringUtils.isEmpty(devDto)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -137,9 +137,49 @@ public class DevicesController extends BaseController {
 		String devRemark = devDto.getRemark();
 		Boolean on_line = devDto.getOnline();
 		Integer groupId = devDto.getGroupId();
-		PageInfo<Devices> devList = devicesService.findDeviceByCondition(pageIndex, pageSize, devNum, devModel,
-				devPosit, devRemark, on_line, groupId);
+		//分两种身份1：厂家直接获取所有设备 2：用户获取自己绑定的设备
+		//判断用户身份
+		PageInfo<DevicesDto> devList;
+		Users searchUser = new Users();
+		searchUser.setTelephone(userName);
+		Users users = usersService.find(searchUser);
+		String type=users.getType();
+		if("1".equals(type)){
+			//厂家查询设备
+			devList = devicesService.findDeviceByCondition(pageIndex, pageSize);
+		}else {
+			//用户查询设备
+			devList = devicesService.findDeviceByUser(pageIndex, pageSize,userName);
+		}
+
 		return returnLogic.resultJsonString(200, "查询成功。", devList);
+	}
+
+
+	/**
+	 * 为设备增加摄像头地址
+	 * */
+	@PostMapping("/camera")
+	public String camera(@RequestBody DeviceCameraDto deviceCameraDto){
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		if (StringUtils.isEmpty(deviceCameraDto)) {
+			return returnLogic.resultErrorJsonString(206, "参数错误。");
+		}
+		DeviceCamera deviceCamera=new DeviceCamera();
+		deviceCamera.setUrl(deviceCameraDto.getUrl());
+		deviceCamera=deviceCameraService.find(deviceCamera);
+		if(!StringUtils.isEmpty(deviceCamera)){
+			return returnLogic.resultErrorJsonString(206, "地址已被使用，请确认后操作！");
+		}
+		DeviceCamera dc=new DeviceCamera();
+		dc.setUrl(deviceCameraDto.getUrl());
+		dc.setDeviceNum(deviceCameraDto.getDeviceNum());
+		dc.setUpdateTime(new Date());
+		deviceCameraService.save(dc);
+		return returnLogic.resultErrorJsonString(200, "配置成功。");
 	}
 
 	/**
@@ -150,27 +190,27 @@ public class DevicesController extends BaseController {
 	@RequestMapping("/bind")
 	public String bindUser(@RequestBody DeviceAndUserDto deviceAndUserDto) {
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(deviceAndUserDto)) {
 			return returnLogic.resultErrorJsonString(206, "参数错误。");
 		}
 
 		Devices devices = new Devices();
-		devices.setDeviceNum(String.valueOf(deviceAndUserDto.getDeviceId()));
+		devices.setDeviceNum(String.valueOf(deviceAndUserDto.getDeviceNum()));
 		Devices dev = devicesService.find(devices);
 		if (StringUtils.isEmpty(dev)) {
 			return returnLogic.resultErrorJsonString(206, "不存在该设备。");
 		}
 		DeviceAndUser dau=new DeviceAndUser();
-		dau.setDeviceId(deviceAndUserDto.getDeviceId());
+		dau.setDeviceNum(deviceAndUserDto.getDeviceNum());
 		DeviceAndUser deviceAndUser=deviceAndUserService.find(dau);
 		if(!StringUtils.isEmpty(deviceAndUser)){
 			return returnLogic.resultErrorJsonString(206, "设备已绑定，请勿重复操作。");
 		}
 		Date updateTime=new Date();
-		dau.setDeviceId(deviceAndUserDto.getDeviceId());
+		dau.setDeviceNum(deviceAndUserDto.getDeviceNum());
 		dau.setUserId(deviceAndUserDto.getUserId());
 		dau.setUserPhone(deviceAndUserDto.getUserPhone());
 		dau.setUpdateTime(updateTime);
@@ -188,9 +228,9 @@ public class DevicesController extends BaseController {
 	public String getDevicesNoPage() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		List<Devices> devList = devicesService.getDevicesNoPage();
 		return returnLogic.resultJsonString(200, "查询成功。", devList);
 	}
@@ -204,9 +244,9 @@ public class DevicesController extends BaseController {
 	@GetMapping("/getDeviceBase")
 	public String getDeviceBase(Integer id) {
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -234,16 +274,16 @@ public class DevicesController extends BaseController {
 	public String saveDevice(@RequestBody DevicesDto devDto) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
 				: httpServletRequest.getHeader("Authorization");
 		// 电话号码
 		String userName = JWTUtil.getUsername(tk);
-		if (StringUtils.isEmpty(userName)) {
-			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
-		}
+//		if (StringUtils.isEmpty(userName)) {
+//			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
+//		}
 		Roles r = rolesService.findRoleForUser("administrator", "administrator", userName);
 		Boolean isAdmin = r == null ? true : false;
 		List<DeviceFuction> df = devicesFunctionService.findDeviceFunctionByRoleId(userName);
@@ -299,16 +339,16 @@ public class DevicesController extends BaseController {
 	public String deleteDevice(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
 				: httpServletRequest.getHeader("Authorization");
 		// 电话号码
 		String userName = JWTUtil.getUsername(tk);
-		if (StringUtils.isEmpty(userName)) {
-			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
-		}
+//		if (StringUtils.isEmpty(userName)) {
+//			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -343,9 +383,9 @@ public class DevicesController extends BaseController {
 	public String devicePropor() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		List<ProporVO> deviceProporList = devicesService.deviceProporList();
 		return returnLogic.resultJsonString(200, "查询成功", deviceProporList);
 	}
@@ -358,9 +398,9 @@ public class DevicesController extends BaseController {
 	public String eventPropor() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		List<ProporVO> eventProporList = devicesService.eventProporList();
 		return returnLogic.resultJsonString(200, "查询成功", eventProporList);
 	}
@@ -375,9 +415,9 @@ public class DevicesController extends BaseController {
 	public String getDeviceAI(Integer deviceId) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(deviceId)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -395,9 +435,9 @@ public class DevicesController extends BaseController {
 	public String getDeviceDI(int deviceId) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(deviceId)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -416,9 +456,9 @@ public class DevicesController extends BaseController {
 	public String getDeviceDO(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -430,9 +470,9 @@ public class DevicesController extends BaseController {
 	public String findDeviceAiCharts(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -454,9 +494,9 @@ public class DevicesController extends BaseController {
 	public String getDeviceEventRecord(EventDto eventDto) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(eventDto)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -473,9 +513,9 @@ public class DevicesController extends BaseController {
 	public String findSysConfig(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -625,9 +665,9 @@ public class DevicesController extends BaseController {
 	public String findSettingConfig(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
@@ -909,9 +949,9 @@ public class DevicesController extends BaseController {
 	public String voltnetPropor(Integer id, Integer parm_year, Integer parm_month) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 
 		List<voltnetPojo> voltnetList = devicesService.voltnetPropor(id, parm_year, parm_month);
 		return returnLogic.resultJsonString(200, "查询成功", voltnetList);
@@ -926,9 +966,9 @@ public class DevicesController extends BaseController {
 	public String countVoltnetPropor() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		List<ContVoltnetPojo> voltnetList = devicesService.countVoltnetPropor();
 		return returnLogic.resultJsonString(200, "查询成功", voltnetList);
 	}
@@ -941,9 +981,9 @@ public class DevicesController extends BaseController {
 	public String get_eventList(Integer id, String eventName, String devNum, Integer pageIndex, Integer pageSize) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		PageHelper.startPage(pageIndex, pageSize);
 		List<EventVO> resList = devicesService.get_eventList(id, eventName, devNum);
 		return returnLogic.resultJsonString(200, "查询成功", new PageInfo<>(resList));
@@ -957,9 +997,9 @@ public class DevicesController extends BaseController {
 	public String get_eventTypeOfgroup() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		List<AiDiDoutVO> resList = devicesService.get_eventTypeOfgroup();
 		return returnLogic.resultJsonString(200, "查询成功", resList);
 	}

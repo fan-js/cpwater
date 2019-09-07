@@ -7,16 +7,16 @@ package cn.ritac.cpwater.web.dto;
  */
 public class DeviceAndUserDto{
 
-    private int deviceId;
+    private int deviceNum;
     private int userId;
     private String userPhone;
 
-    public int getDeviceId() {
-        return deviceId;
+    public int getDeviceNum() {
+        return deviceNum;
     }
 
-    public void setDeviceId(int deviceId) {
-        this.deviceId = deviceId;
+    public void setDeviceNum(int deviceNum) {
+        this.deviceNum = deviceNum;
     }
 
     public int getUserId() {

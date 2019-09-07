@@ -23,7 +23,8 @@ public class SendMassage{
             ks.getAPP_KEY());
 
     //发送验证码
-    public void sendSMS(String phone) {
+    public SendSMSResult sendSMS(String phone) {
+        SendSMSResult res = null;
         SMSPayload payload = SMSPayload.newBuilder()
                 .setMobileNumber(phone)
                 .setTempId(1)
@@ -31,12 +32,13 @@ public class SendMassage{
                 .build();
 
         try {
-            SendSMSResult res = client.sendSMSCode(payload);
+           res = client.sendSMSCode(payload);
             LOG.info("Got result: " + res);
+            return res;
         } catch (Exception e) {
             LOG.info("Error Message: " + e.getMessage());
         }
-
+        return res;
     }
 
     //模板发送短信通知

@@ -3,6 +3,7 @@ package cn.ritac.cpwater.mybatis.mapper;
 import java.util.Date;
 import java.util.List;
 
+import cn.ritac.cpwater.web.dto.DevicesDto;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Select;
@@ -42,9 +43,9 @@ public interface DevicesMapper extends Mapper<Devices> {
 	@ResultMap("BaseResultMap")
 	public List<Devices> findAllNotInGroup();
 
-	public List<Devices> findDeviceByCondition(@Param("devNum") String devNum, @Param("devModel") String devModel,
-			@Param("devPosit") String devPosit, @Param("devRemark") String devRemark, @Param("on_line") Boolean on_line,
-			@Param("groupId") Integer groupId);
+	public List<DevicesDto> findDeviceByCondition();
+
+	public List<DevicesDto> findDeviceByUser(@Param("telePhone") String telePhone);
 
 	public List<Devices> getDevicesNoPage();
 

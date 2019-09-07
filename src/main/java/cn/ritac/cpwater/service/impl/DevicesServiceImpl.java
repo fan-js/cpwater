@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.ritac.cpwater.web.dto.DevicesDto;
 import cn.ritac.cpwater.web.dto.convert.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -219,68 +220,9 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 		if (!StringUtils.isEmpty(doutObj)) {
 			List<AiDiDoutVO> doutList = new ArrayList<AiDiDoutVO>();
 			AiDiDoutVO dot = new AiDiDoutVO();
-			dot.setName("电磁锁状态");
-			dot.setValue(doutObj.getElecLock().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("照明灯");
-			dot.setValue(doutObj.getLight().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("蜂鸣器 ");
-			dot.setValue(doutObj.getBeep().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("风扇 ");
-			dot.setValue(doutObj.getFan().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("加热器 ");
-			dot.setValue(doutObj.getHeating().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("自动重合闸状态");
-			dot.setValue(doutObj.getReclosState().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("报警器消音");
-			dot.setValue(doutObj.getWaringSilencing().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("ONU");
-			dot.setValue(doutObj.getRelayState_1().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("交换机");
-			dot.setValue(doutObj.getRelayState_2().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("摄相机1");
-			dot.setValue(doutObj.getRelayState_3().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("摄相机2");
-			dot.setValue(doutObj.getRelayState_4().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("备用1");
-			dot.setValue(doutObj.getRelayState_5().toString());
-			doutList.add(dot);
-
-			dot = new AiDiDoutVO();
-			dot.setName("备用2");
-			dot.setValue(doutObj.getRelayState_6().toString());
+			dot.setName("水泵状态");
+			String state=doutObj.getElecLock()?"开启":"关闭";
+			dot.setValue(state);
 			doutList.add(dot);
 
 			doutMap.put("dout", doutList);
@@ -395,12 +337,17 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 	}
 
 	@Override
-	public PageInfo<Devices> findDeviceByCondition(int pageIndex, int pageSize, String devNum, String devModel,
-			String devPosit, String devRemark, Boolean on_line, Integer groupId) {
+	public PageInfo<DevicesDto> findDeviceByCondition(int pageIndex, int pageSize) {
 		PageHelper.startPage(pageIndex, pageSize);
-		List<Devices> list = devicesMapper.findDeviceByCondition(devNum, devModel, devPosit, devRemark, on_line,
-				groupId);
+		List<DevicesDto> list = devicesMapper.findDeviceByCondition();
 		return new PageInfo<>(list);
+	}
+
+	@Override
+	public PageInfo<DevicesDto> findDeviceByUser(int pageIndex, int pageSize, String telePhone) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<DevicesDto> list = devicesMapper.findDeviceByUser(telePhone);
+		return  new PageInfo<>(list);
 	}
 
 	@Override

@@ -77,6 +77,7 @@ public class SseServicesImp extends BaseServiceImpl<SseEmitter> implements SseSe
 			try {
 				// 发送
 				emitter.send(sseEventBuilder);
+				System.out.printf("sseEventBuilder.toString()"+sseEventBuilder.toString());
 			} catch (IOException e) {
 				deadEmitters.add(emitter);
 			}
