@@ -16,6 +16,60 @@ public class DevicesDoRec implements Serializable {
 	@Column(name = "update_time")
 	private Date updateTime;
 
+
+	/**
+	 *水泵
+	 * */
+	@Column(name = "pump")
+	private boolean pump;
+
+	/**
+	 *泄压阀
+	 * */
+	@Column(name = "wastegate")
+	private boolean wastegate;
+	/**
+	 *电能表复位
+	 * */
+	@Column(name = "reset")
+	private boolean  reset;
+
+	public boolean isPump() {
+		return pump;
+	}
+
+	public boolean isWastegate() {
+		return wastegate;
+	}
+
+	public boolean isReset() {
+		return reset;
+	}
+
+	public boolean getPump() {
+		return pump;
+	}
+
+	public void setPump(boolean pump) {
+		this.pump = pump;
+	}
+
+	public boolean getWastegate() {
+		return wastegate;
+	}
+
+	public void setWastegate(boolean wastegate) {
+		this.wastegate = wastegate;
+	}
+
+	public boolean getReset() {
+		return reset;
+	}
+
+	public void setReset(boolean reset) {
+		this.reset = reset;
+	}
+
 	/**
 	 * 电磁锁状态
 	 */

@@ -6,24 +6,21 @@ import java.util.List;
 
 import cn.ritac.cpwater.comm.mqtt.message.*;
 import cn.ritac.cpwater.comm.mqtt.newdev.OTAUpdatePack;
-import cn.ritac.cpwater.mybatis.model.DevicesReg;
-import cn.ritac.cpwater.mybatis.model.DevicesRegRec;
+import cn.ritac.cpwater.mybatis.mapper.DevicesDoMapper;
+import cn.ritac.cpwater.mybatis.model.*;
 import cn.ritac.cpwater.service.DevicesRegRecService;
 import cn.ritac.cpwater.service.DevicesRegService;
 import cn.ritac.cpwater.web.dto.convert.*;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import cn.ritac.cpwater.comm.mqtt.newdev.MQTTAddrVal;
 import cn.ritac.cpwater.comm.mqtt.newdev.MsgDataUpOpt;
-import cn.ritac.cpwater.mybatis.model.Dataupopt;
-import cn.ritac.cpwater.mybatis.model.Devices;
 import cn.ritac.cpwater.service.DevicesService;
 import cn.ritac.cpwater.service.MQTTService;
 import cn.ritac.cpwater.web.dto.CameraDTO;
@@ -36,6 +33,8 @@ import cn.ritac.cpwater.web.dto.SysDto;
 @ResponseBody
 public class MQTTController extends BaseController {
 
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	@Autowired
 	private MQTTService mqttService;
 	@Autowired
@@ -44,6 +43,9 @@ public class MQTTController extends BaseController {
 	private DevicesRegService devicesRegService;
 	@Autowired
 	private DevicesRegRecService devicesRegRecService;
+
+	@Autowired
+	private DevicesDoMapper devicesDoMapper;
 
 
 	/**
@@ -189,7 +191,7 @@ public class MQTTController extends BaseController {
 	}
 
 	/**
-	 * 设置设备配置参数 REG
+	 * 设置设备配置参数 REG工作时间段
 	 *
 	 * @param
 	 */
@@ -239,24 +241,58 @@ public class MQTTController extends BaseController {
 		devicesReg=devicesRegService.find(devicesReg);
 
 		//组装对象信息
-		devicesReg=devicesReg;
 		if(StringUtils.isEmpty(devicesReg)){
 			devicesReg=new DevicesReg();
 			devicesReg.setUpdateTime(new Date());
 			devicesReg.setDeviceId(mqttCommandPojo.getId());
 			devicesReg.setWorkMode(Integer.parseInt(listData.get(0).getValue().toString()));
-			devicesReg.setStartTime1a(listData.get(1).getValue().toString());
-			devicesReg.setEndTime1a(listData.get(2).getValue().toString());
-			devicesReg.setPress(listData.get(3).getValue().toString());
+			devicesReg.setStartTimea(listData.get(1).getValue().toString());
+			devicesReg.setEndTimea(listData.get(2).getValue().toString());
+			devicesReg.setStatea(listData.get(3).getValue().toString());
+
+			devicesReg.setStartTimeb(listData.get(4).getValue().toString());
+			devicesReg.setEndTimeb(listData.get(5).getValue().toString());
+			devicesReg.setStateb(listData.get(6).getValue().toString());
+
+			devicesReg.setStartTimec(listData.get(7).getValue().toString());
+			devicesReg.setEndTimec(listData.get(8).getValue().toString());
+			devicesReg.setStatec(listData.get(9).getValue().toString());
+
+			devicesReg.setStartTimed(listData.get(10).getValue().toString());
+			devicesReg.setEndTimed(listData.get(11).getValue().toString());
+			devicesReg.setStated(listData.get(12).getValue().toString());
+
+			devicesReg.setWinda(listData.get(13).getValue().toString());
+			devicesReg.setWindb(listData.get(14).getValue().toString());
+			devicesReg.setPress(Float.parseFloat(listData.get(15).getValue().toString()));
+			devicesReg.setRate(listData.get(16).getValue().toString());
 				devicesRegService.save(devicesReg);
 		}else{
 			//非空则更新
 			devicesReg.setDeviceId(mqttCommandPojo.getId());
 			devicesReg.setUpdateTime(new Date());
+			devicesReg.setDeviceId(mqttCommandPojo.getId());
 			devicesReg.setWorkMode(Integer.parseInt(listData.get(0).getValue().toString()));
-			devicesReg.setStartTime1a(listData.get(1).getValue().toString());
-			devicesReg.setEndTime1a(listData.get(2).getValue().toString());
-			devicesReg.setPress(listData.get(3).getValue().toString());
+			devicesReg.setStartTimea(listData.get(1).getValue().toString());
+			devicesReg.setEndTimea(listData.get(2).getValue().toString());
+			devicesReg.setStatea(listData.get(3).getValue().toString());
+
+			devicesReg.setStartTimeb(listData.get(4).getValue().toString());
+			devicesReg.setEndTimeb(listData.get(5).getValue().toString());
+			devicesReg.setStateb(listData.get(6).getValue().toString());
+
+			devicesReg.setStartTimec(listData.get(7).getValue().toString());
+			devicesReg.setEndTimec(listData.get(8).getValue().toString());
+			devicesReg.setStatec(listData.get(9).getValue().toString());
+
+			devicesReg.setStartTimed(listData.get(10).getValue().toString());
+			devicesReg.setEndTimed(listData.get(11).getValue().toString());
+			devicesReg.setStated(listData.get(12).getValue().toString());
+
+			devicesReg.setWinda(listData.get(13).getValue().toString());
+			devicesReg.setWindb(listData.get(14).getValue().toString());
+			devicesReg.setPress(Float.parseFloat(listData.get(15).getValue().toString()));
+			devicesReg.setRate(listData.get(16).getValue().toString());
 			devicesRegService.update(devicesReg);
 
 		}
@@ -266,17 +302,135 @@ public class MQTTController extends BaseController {
 		devicesRegRec.setUpdateTime(new Date());
 		devicesRegRec.setDeviceId(mqttCommandPojo.getId());
 		devicesRegRec.setWorkMode(Integer.parseInt(listData.get(0).getValue().toString()));
-		devicesRegRec.setStartTime1a(listData.get(1).getValue().toString());
-		devicesRegRec.setEndTime1a(listData.get(2).getValue().toString());
-		devicesRegRec.setPress(listData.get(3).getValue().toString());
-		devicesRegRecService.save(devicesRegRec);
+		devicesRegRec.setStartTimea(listData.get(1).getValue().toString());
+		devicesRegRec.setEndTimea(listData.get(2).getValue().toString());
+		devicesRegRec.setStatea(listData.get(3).getValue().toString());
 
-		System.out.printf(commandPojo.toString());
+        devicesRegRec.setStartTimeb(listData.get(4).getValue().toString());
+        devicesRegRec.setEndTimeb(listData.get(5).getValue().toString());
+        devicesRegRec.setStateb(listData.get(6).getValue().toString());
+
+        devicesRegRec.setStartTimec(listData.get(7).getValue().toString());
+        devicesRegRec.setEndTimec(listData.get(8).getValue().toString());
+        devicesRegRec.setStatec(listData.get(9).getValue().toString());
+
+        devicesRegRec.setStartTimed(listData.get(10).getValue().toString());
+        devicesRegRec.setEndTimed(listData.get(11).getValue().toString());
+        devicesRegRec.setStated(listData.get(12).getValue().toString());
+
+		devicesRegRec.setWinda(listData.get(13).getValue().toString());
+		devicesRegRec.setWindb(listData.get(14).getValue().toString());
+        devicesRegRec.setPress(Float.parseFloat(listData.get(15).getValue().toString()));
+		devicesRegRec.setRete(listData.get(16).getValue().toString());
+		devicesRegRecService.save(devicesRegRec);
 		return returnLogic.resultJson(200, "指令已下发！");
 
 	}
 
+	/**
+	 * 下发命令 让设备上报参数信息
+	 *
+	 * @param
+	 */
+	@PutMapping("/getDi")
+	public String getDi(Integer id) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		if (StringUtils.isEmpty(id)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devSearch = new Devices();
+		devSearch.setId(id);
+		devSearch = devicesService.find(devSearch);
+		if (StringUtils.isEmpty(devSearch)) {
+			return returnLogic.resultErrorJsonString(206, "未获取到设备信息。");
+		}
+		MQTTControlCommandPojo commandPojo = new MQTTControlCommandPojo();
+		commandPojo.setProductID("CPWATER");
+		commandPojo.setDeviceID(devSearch.getDeviceNum());
+		commandPojo.setDeviceKey(devSearch.getDeviceKey());
+		commandPojo.setMsgType(102);
 
+		MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+		msgData.setAddr(1);
+		commandPojo.setMsgData(msgData);
+		mqttService.sendDeviceControlCommand(commandPojo);
+		return returnLogic.resultJson(200, "指令已下发！");
+
+	}
+
+	/**
+	 * 下发命令 让设备上报参数信息
+	 *
+	 * @param
+	 */
+	@PutMapping("/getDo")
+	public String getDo(Integer id) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		if (StringUtils.isEmpty(id)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devSearch = new Devices();
+		devSearch.setId(id);
+		devSearch = devicesService.find(devSearch);
+		if (StringUtils.isEmpty(devSearch)) {
+			return returnLogic.resultErrorJsonString(206, "未获取到设备信息。");
+		}
+		MQTTControlCommandPojo commandPojo = new MQTTControlCommandPojo();
+		commandPojo.setProductID("CPWATER");
+		commandPojo.setDeviceID(devSearch.getDeviceNum());
+		commandPojo.setDeviceKey(devSearch.getDeviceKey());
+		commandPojo.setMsgType(105);
+
+		MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+		msgData.setAddr(1);
+		commandPojo.setMsgData(msgData);
+		mqttService.sendDeviceControlCommand(commandPojo);
+		return returnLogic.resultJson(200, "指令已下发！");
+
+	}
+
+	/**
+	 * 下发命令 让设备上报参数信息
+	 *
+	 * @param
+	 */
+	@PutMapping("/getReg")
+	public String getReg(Integer id) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		if (StringUtils.isEmpty(id)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devSearch = new Devices();
+		devSearch.setId(id);
+		devSearch = devicesService.find(devSearch);
+		if (StringUtils.isEmpty(devSearch)) {
+			return returnLogic.resultErrorJsonString(206, "未获取到设备信息。");
+		}
+		MQTTControlCommandPojo commandPojo = new MQTTControlCommandPojo();
+		commandPojo.setProductID("CPWATER");
+		commandPojo.setDeviceID(devSearch.getDeviceNum());
+		commandPojo.setDeviceKey(devSearch.getDeviceKey());
+		commandPojo.setMsgType(107);
+
+		MQTTDeviceConfigClientUpMsgData msgData = new MQTTDeviceConfigClientUpMsgData();
+		msgData.setAddr(1);
+		commandPojo.setMsgData(msgData);
+		mqttService.sendDeviceControlCommand(commandPojo);
+		return returnLogic.resultJson(200, "指令已下发！");
+
+	}
 
 	/**
 	 * 设置设备配置参数 REG之camera
@@ -394,20 +548,45 @@ public class MQTTController extends BaseController {
 	}
 
 	/**
-	 * 控制命令下发<写 do>
+	 * 控制水泵命令下发<写 do>
 	 * 
 	 * @param controlCommand
 	 */
 	@PutMapping("/changeDO")
-	public String changeDO(@RequestBody MQTTCommandPojo controlCommand) {
+	public void changeDO(@RequestBody MQTTCommandPojo controlCommand) {
+		run(1,controlCommand);
+	}
+
+	/**
+	 * 控制泄压阀命令下发<写 do>
+	 *
+	 * @param controlCommand
+	 */
+	@PutMapping("/changeDOs")
+	public void changeDOs(@RequestBody MQTTCommandPojo controlCommand) {
+		run(2,controlCommand);
+	}
+
+	/**
+	 * 控制泄压阀命令下发<写 do>
+	 *
+	 * @param controlCommand
+	 */
+	@PutMapping("/changeDOReset")
+	public void changeDOReset(@RequestBody MQTTCommandPojo controlCommand) {
+		run(3,controlCommand);
+	}
+
+	public String run(int num,MQTTCommandPojo controlCommand){
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+	//		if (!subject.isAuthenticated()) {
+	//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+	//		}
 		if (StringUtils.isEmpty(controlCommand)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
+		try {
 		Devices devSearch = new Devices();
 		devSearch.setId(controlCommand.getId());
 		devSearch = devicesService.find(devSearch);
@@ -427,18 +606,35 @@ public class MQTTController extends BaseController {
 		if (!StringUtils.isEmpty(listData)) {
 			for (AiDiDoutVO vo : listData) {
 				MQTTAddrVal dot = new MQTTAddrVal();
-					dot.setAddr(1);
-					dot.setVal(vo.getValue());
+				dot.setAddr(num);
+				dot.setVal(vo.getValue());
 				dout.add(dot);
 			}
 		}
 		msgData.setDout(dout);
 		commandPojo.setMsgData(msgData);
 		mqttService.sendDeviceControlCommand(commandPojo);
-		System.out.printf(commandPojo.toString());
+		//存库
+		DevicesDo devicesDo=new DevicesDo();
+		switch (num){
+			case 1:
+				devicesDo.setPump((boolean)(controlCommand.getData().get(0).getValue()));
+				break;
+			case 2:
+				devicesDo.setWastegate((boolean)(controlCommand.getData().get(0).getValue()));
+				break;
+			case 3:
+				devicesDo.setReset((boolean)(controlCommand.getData().get(0).getValue()));
+				break;
+		}
+		devicesDoMapper.updateByPrimaryKey(devicesDo);
+		} catch (Exception ex) {
+			logger.error("数据配置出错:" + ex.getMessage());
+		}
 		return returnLogic.resultJson(200, "指令已下发！");
-
 	}
+
+
 
 
 	/**
@@ -479,7 +675,6 @@ public class MQTTController extends BaseController {
 		mcspp.setUpdatePack(updatePack);
 		commandPojo.setMsgData(mcspp);
 		mqttService.sendDeviceControlCommand(commandPojo);
-		System.out.printf(commandPojo.toString());
 		return returnLogic.resultJson(200, "指令已下发！");
 	}
 

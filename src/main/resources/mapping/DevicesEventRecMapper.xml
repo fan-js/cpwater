@@ -1,36 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ritac.cpwater.mybatis.mapper.DevicesEventRecMapper">
-  <resultMap id="BaseResultMap" type="cn.ritac.cpwater.mybatis.model.DevicesEventRec">
-    <!--
-      WARNING - @mbg.generated
-    -->
+  <resultMap id="EventVO" type="cn.ritac.cpwater.web.dto.convert.EventVO">
     <id column="id" jdbcType="INTEGER" property="id" />
+	  <result column="device_num" jdbcType="VARCHAR" property="deviceNum" />
     <result column="device_id" jdbcType="INTEGER" property="deviceId" />
     <result column="event_info" jdbcType="VARCHAR" property="eventInfo" />
     <result column="event_content" jdbcType="VARCHAR" property="eventContent" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
-  
+
+
 	<select id="get_eventList" resultType="cn.ritac.cpwater.web.dto.convert.EventVO">
 		SELECT
-			 eve.id
-			,dev.device_num
-			,pm.param_value  event_name
-			,pm.param_descript event_descript
-			,eve.create_time
+<<<<<<< Updated upstream
+		eve.*
 		FROM cpwater_devices_event_rec eve
-		LEFT JOIN cpwater_params pm on eve.event_info = pm.param_key and pm.param_col = 'eventType'
-		LEFT JOIN cpwater_devices dev on eve.device_id = dev.id
-		WHERE 1=1 AND pm.param_action = TRUE 
+		WHERE 1=1
 		<if test=" id > 0 ">
 		  AND  dev.id = #{id}
-		</if>
-		<if test="eventName != null and eventName != ''">
-			AND pm.param_value LIKE CONCAT('%',#{eventName},'%')
-		</if>
-		<if test="devNum != null and devNum != ''">
-			 AND dev.device_num = #{devNum}
+=======
+	eve.device_id deviceId,
+	eve.device_num deviceNum,
+	eve.event_content eventDescript,
+	eve.event_info eventInfo,
+	eve.create_time createTime
+	FROM cpwater_devices_event_rec eve
+		WHERE 1=1
+		<if test=" id > 0 ">
+		  AND  eve.device_id = #{id}
+>>>>>>> Stashed changes
 		</if>
 		GROUP BY eve.id
 		ORDER BY eve.create_time DESC

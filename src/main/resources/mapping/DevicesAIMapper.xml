@@ -27,15 +27,15 @@
 			update_time time
 			,voltage vol
 			,current cur
-			,temper temp
-			,humidity hum
-			,illuminance ill
+			,electric_energy temp
+			,wind_direction hum
+			,water ill
 			,press
-			,ups_surpluscapacity_ma
-			,ups_surpluscapacity_per
 		FROM cpwater_devices_ai_rec
 		WHERE
 		device_id = #{id}
+		order by cast(update_time as time) desc
+		LIMIT 20
 	</select>
   
 </mapper>

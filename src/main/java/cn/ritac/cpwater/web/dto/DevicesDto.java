@@ -687,4 +687,13 @@ public class DevicesDto implements Serializable {
 		this.dimension = dimension;
 	}
 
+	private Long networkinghours;
+
+	public Long getNetworkinghours() {
+		return networkinghours;
+	}
+
+	public void setNetworkinghours(Long networkinghours) {
+		this.networkinghours = networkinghours;
+	}
 }

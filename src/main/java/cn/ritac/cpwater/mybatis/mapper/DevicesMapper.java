@@ -33,11 +33,15 @@ public interface DevicesMapper extends Mapper<Devices> {
 
 	public List<Devices> findDeviceOfRole(@Param("groupId") int groupId, @Param("roleId") int roleId);
 
-	public List<ProporVO> deviceProporList();
+	public List<ProporVO> deviceProporList(@Param("phone") String phone);
 
-	public List<ProporVO> eventProporList();
+	public List<ProporVO> eventProporList(@Param("phone") String phone);
 
 	public List<EventVO> evenList(EventDto eventDto);
+
+	public List<EventVO> evenListCut(@Param("phone")String phone);
+
+	public List<EventVO> evenNewListCut(@Param("length")Integer length);
 
 	@Select("SELECT * FROM cpwater_devices d WHERE d.id not in ( SELECT gd.device_id FROM cpwater_group_device gd )")
 	@ResultMap("BaseResultMap")
@@ -47,6 +51,6 @@ public interface DevicesMapper extends Mapper<Devices> {
 
 	public List<DevicesDto> findDeviceByUser(@Param("telePhone") String telePhone);
 
-	public List<Devices> getDevicesNoPage();
+	public List<Devices> getDevicesNoPage(@Param("phone") String phone);
 
 }

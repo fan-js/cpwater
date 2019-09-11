@@ -69,10 +69,11 @@ public class DeviceDataExportController extends BaseController {
 	public String getDeviceCount() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
-		List<DeviceCountVo> list = exportMapper.export_deviceCount();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		String phone=null;
+		List<DeviceCountVo> list = exportMapper.export_deviceCount(phone);
 		return returnLogic.resultJsonString(200, "查询成功。", list);
 	}
 

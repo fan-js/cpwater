@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.ritac.cpwater.web.dto.DevicesDto;
+import cn.ritac.cpwater.mybatis.model.*;
+import cn.ritac.cpwater.web.dto.*;
 import cn.ritac.cpwater.web.dto.convert.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,19 +24,9 @@ import cn.ritac.cpwater.mybatis.mapper.DevicesEventRecMapper;
 import cn.ritac.cpwater.mybatis.mapper.DevicesMapper;
 import cn.ritac.cpwater.mybatis.mapper.WorkingHourMapper;
 import cn.ritac.cpwater.mybatis.mapper.WorkingTimeMapper;
-import cn.ritac.cpwater.mybatis.model.Devices;
-import cn.ritac.cpwater.mybatis.model.DevicesAI;
-import cn.ritac.cpwater.mybatis.model.DevicesDI;
-import cn.ritac.cpwater.mybatis.model.DevicesDo;
-import cn.ritac.cpwater.mybatis.model.DevicesState;
-import cn.ritac.cpwater.mybatis.model.WorkingHour;
-import cn.ritac.cpwater.mybatis.model.WorkingTime;
 import cn.ritac.cpwater.service.DevicesService;
 import cn.ritac.cpwater.util.DateTime;
 import cn.ritac.cpwater.util.NumberTools;
-import cn.ritac.cpwater.web.dto.ContVoltnetPojo;
-import cn.ritac.cpwater.web.dto.EventDto;
-import cn.ritac.cpwater.web.dto.voltnetPojo;
 
 /**
  * 设备
@@ -109,14 +100,26 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 	}
 
 	@Override
-	public List<ProporVO> deviceProporList() {
-		return devicesMapper.deviceProporList();
+	public List<ProporVO> deviceProporList(String phone) {
+		return devicesMapper.deviceProporList(phone);
 	}
 
 	@Override
-	public List<ProporVO> eventProporList() {
-		return devicesMapper.eventProporList();
+	public List<ProporVO> eventProporList(String phone) {
+		return devicesMapper.eventProporList(phone);
 	}
+
+	@Override
+	public List<EventVO> findEventListCut(String phone){
+		List<EventVO> list = devicesMapper.evenListCut(phone);
+		return list;
+	};
+
+    @Override
+	public List<EventVO> findNewEventList(Integer length){
+		List<EventVO> list = devicesMapper.evenNewListCut(length);
+		return list;
+	};
 
 	@Override
 	public PageInfo<EventVO> findEventList(EventDto eventDto) {
@@ -189,12 +192,15 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 
 			//判断水位
 			String waterState="水位获取失败";
-			if(doutObj.getWaterLevelc()){
+			if(doutObj.getWaterLeveld()){
 				waterState="低水位";
-				if(doutObj.getWaterLevelb()){
-					waterState="中水位";
-					if(doutObj.getWaterlevela()){
-						waterState="高水位";
+				if(doutObj.getWaterLevelc()){
+					waterState="中低水位";
+					if(doutObj.getWaterLevelb()){
+						waterState="中高水位";
+						if(doutObj.getWaterlevela()){
+							waterState="高水位";
+						}
 					}
 				}
 			}
@@ -221,8 +227,17 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 			List<AiDiDoutVO> doutList = new ArrayList<AiDiDoutVO>();
 			AiDiDoutVO dot = new AiDiDoutVO();
 			dot.setName("水泵状态");
-			String state=doutObj.getElecLock()?"开启":"关闭";
-			dot.setValue(state);
+			dot.setValue(doutObj.getPump()?"开启":"关闭");
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("泄压阀状态");
+			dot.setValue(doutObj.getWastegate()?"开启":"关闭");
+			doutList.add(dot);
+
+			dot = new AiDiDoutVO();
+			dot.setName("电能表复位状态");
+			dot.setValue(doutObj.getReset()?"开启":"关闭");
 			doutList.add(dot);
 
 			doutMap.put("dout", doutList);
@@ -311,9 +326,12 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 		return devicesMapper.findAllNotInGroup();
 	}
 
+
 	@Override
-	public List<EventVO> get_eventList(Integer id, String eventName, String devNum) {
-		return devicesEventRecMapper.get_eventList(id, eventName, devNum);
+	public PageInfo<EventVO> get_eventList(Integer id,Integer pageIndex,Integer pageSize) {
+		PageHelper.startPage(pageIndex, pageSize);
+		List<EventVO> list = devicesEventRecMapper.get_eventList(id);
+		return new PageInfo<>(list);
 	}
 
 	@Override
@@ -351,8 +369,8 @@ public class DevicesServiceImpl extends BaseServiceImpl<Devices> implements Devi
 	}
 
 	@Override
-	public List<Devices> getDevicesNoPage() {
-		return devicesMapper.getDevicesNoPage();
+	public List<Devices> getDevicesNoPage(String phone) {
+		return devicesMapper.getDevicesNoPage(phone);
 	}
 
 	/**

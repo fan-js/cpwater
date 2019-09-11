@@ -43,8 +43,8 @@ public class DevicesOta implements Serializable {
     /**
      * MD5校验码
      * */
-    @Column(name = "otaCode")
-    private String ota_code;
+    @Column(name = "ota_code")
+    private String otaCode;
     /**
      * 升级包所实用的产品类型
      * */
@@ -58,8 +58,8 @@ public class DevicesOta implements Serializable {
     /**
      *
      * */
-    @Column(name = "uploadTime")
-    private Date upload_time;
+    @Column(name = "upload_time")
+    private Date uploadTime;
 
     public Integer getId() {
         return id;
@@ -109,12 +109,12 @@ public class DevicesOta implements Serializable {
         this.otaSize = otaSize;
     }
 
-    public String getOta_code() {
-        return ota_code;
+    public String getOtaCode() {
+        return otaCode;
     }
 
-    public void setOta_code(String ota_code) {
-        this.ota_code = ota_code;
+    public void setOtaCode(String otaCode) {
+        this.otaCode = otaCode;
     }
 
     public String getOtaProductId() {
@@ -133,11 +133,11 @@ public class DevicesOta implements Serializable {
         this.otaDeviceId = otaDeviceId;
     }
 
-    public Date getUpload_time() {
-        return upload_time;
+    public Date getUploadTime() {
+        return uploadTime;
     }
 
-    public void setUpload_time(Date upload_time) {
-        this.upload_time = upload_time;
+    public void setUploadTime(Date uploadTime) {
+        this.uploadTime = uploadTime;
     }
 }

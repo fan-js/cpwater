@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HEAD;
 
 import cn.jsms.api.SendSMSResult;
 import cn.jsms.api.ValidSMSResult;
@@ -387,6 +388,7 @@ public class UserController extends BaseController {
 				pojo.setCreateTime(new Date());
 				pojo.setType("0");
 				pojo.setUser_token(token);
+				pojo.setType("");
 				// 保存用户
 				usersService.save(pojo);
 				return returnLogic.resultJson(200, "添加账号成功 !");

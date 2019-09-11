@@ -30,7 +30,7 @@
   select * from cpwater_users
   
   <where>
-   1=1
+	type = 0
   <if test="telephone!=null and telephone!=''">
    	 and telephone=#{telephone}
   </if>
@@ -54,20 +54,11 @@
 	
 	<select id="userProporList" resultType="cn.ritac.cpwater.web.dto.convert.ProporVO">
 		SELECT
-			 CASE a.admin_name  WHEN '管理员' THEN a.admin_name ELSE (
-			 CASE a.admin_name  WHEN '巡检员' THEN a.admin_name ELSE(
-			 CASE a.admin_name  WHEN '维保员' THEN a.admin_name ELSE '' 
-				END
-				)END
-				) END name
-				,COUNT(a.admin_name) value
-				,TRUNCATE(ROUND(COUNT(a.admin_name) /k.num,3)*100,2) per
-				,k.num allNum
-		FROM cpwater_admin a
-		INNER JOIN cpwater_user_role ur on a.id = ur.role_id
-		INNER JOIN(
-		SELECT COUNT(1) num FROM cpwater_users
-		) k on 1=1
-		GROUP BY a.admin_name
+				 CASE a.type WHEN 0 THEN '用户' ELSE (
+				 CASE a.type WHEN 1 THEN '管理员' ELSE'' END
+				) END name,
+		count(*) value
+		from cpwater_users a
+		group by a.type;
 	</select>
 </mapper>

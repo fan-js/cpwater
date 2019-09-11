@@ -25,13 +25,19 @@
 	<!-- 2. 设备总在线状况 -->
 	<select id="export_deviceCount" resultType="cn.ritac.cpwater.web.dto.export.DeviceCountVo">
 		SELECT
-			 NOW() data_time
-			,SUM(1) num
-			,SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) onlineNum
-			,SUM(CASE dev.`online` WHEN 0 THEN 1 ELSE 0 END) offlineNum
-			,SUM(CASE dev.isFault WHEN 1 THEN 1 ELSE 0 END)  faultNum
-			,ROUND(SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) / SUM(1),2) onlineper
+		NOW() data_time
+		,SUM(1) num
+		,SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) onlineNum
+		,SUM(CASE dev.`online` WHEN 0 THEN 1 ELSE 0 END) offlineNum
+		,SUM(CASE dev.isFault WHEN 1 THEN 1 ELSE 0 END)  faultNum
+		,ROUND(SUM(CASE dev.`online` WHEN 1 THEN 1 ELSE 0 END) / SUM(1),2) onlineper
 		FROM cpwater_devices dev
+		<if test="phone != null and phone.trim() != ''">
+			LEFT JOIN cpwater_device_user cdu
+			on cdu.device_num=dev.device_num
+			where cdu.user_phone= #{phone}
+		</if>
+
 	</select>
 	
 	<!-- 3. 设备区域在线状况 -->

@@ -6,8 +6,8 @@ package cn.ritac.cpwater.sendMassage;
  */
 public class KetSecret {
 
-    private final String APP_KEY="f1be90e7bc6a259fc516611c";
-    private final String MASTER_SECRET="fa7a48d80af5643a8b56a23a";
+    private final String APP_KEY="173b4c750eaec782c70a9020";
+    private final String MASTER_SECRET="0f7b89b6d2e38851c6e3551f";
 
     public String getAPP_KEY() {
         return APP_KEY;

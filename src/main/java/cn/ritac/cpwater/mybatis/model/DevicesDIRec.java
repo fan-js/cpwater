@@ -28,36 +28,26 @@ public class DevicesDIRec implements Serializable {
     @Column(name = "wastegate")
     private Boolean wastegate;
     /**
-     * 水位高
+     * A
      */
     @Column(name = "water_levela")
     private Boolean waterlevela;
     /**
-     * 水位中
+     * b
      */
     @Column(name = "water_levelb")
     private Boolean waterLevelb;
     /**
-     * 水位低
+     * c
      */
     @Column(name = "water_levelc")
     private Boolean waterLevelc;
 
-    public Boolean getWaterPump() {
-        return waterPump;
-    }
-
-    public void setWaterPump(Boolean waterPump) {
-        this.waterPump = waterPump;
-    }
-
-    public Boolean getWastegate() {
-        return wastegate;
-    }
-
-    public void setWastegate(Boolean wastegate) {
-        this.wastegate = wastegate;
-    }
+    /**
+     * d
+     */
+    @Column(name = "water_leveld")
+    private Boolean waterLeveld;
 
     public Boolean getWaterlevela() {
         return waterlevela;
@@ -82,6 +72,31 @@ public class DevicesDIRec implements Serializable {
     public void setWaterLevelc(Boolean waterLevelc) {
         this.waterLevelc = waterLevelc;
     }
+
+    public Boolean getWaterLeveld() {
+        return waterLeveld;
+    }
+
+    public void setWaterLeveld(Boolean waterLeveld) {
+        this.waterLeveld = waterLeveld;
+    }
+
+    public Boolean getWaterPump() {
+        return waterPump;
+    }
+
+    public void setWaterPump(Boolean waterPump) {
+        this.waterPump = waterPump;
+    }
+
+    public Boolean getWastegate() {
+        return wastegate;
+    }
+
+    public void setWastegate(Boolean wastegate) {
+        this.wastegate = wastegate;
+    }
+
 
 
 

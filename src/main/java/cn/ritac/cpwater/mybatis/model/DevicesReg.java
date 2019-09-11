@@ -22,6 +22,138 @@ public class DevicesReg implements Serializable {
     @Column(name = "work_mode")
     private Integer workMode;
 
+    /**
+     * 定时起始时间1
+     * */
+    @Column(name = "start_timea")
+    private String startTimea;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "end_timea")
+    private String endTimea;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "statea")
+    private String statea;
+    /**
+     * 定时起始时间2
+     * */
+    @Column(name = "start_timeb")
+    private String startTimeb;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "end_timeb")
+    private String endTimeb;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "stateb")
+    private String stateb;
+    /**
+     * 定时起始时间3
+     * */
+    @Column(name = "start_timec")
+    private String startTimec;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "end_timec")
+    private String endTimec;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "statec")
+    private String statec;
+    /**
+     * 定时起始时间4
+     * */
+    @Column(name = "start_timed")
+    private String startTimed;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "end_timed")
+    private String endTimed;
+
+    /**
+     * 定时结束时间
+     * */
+    @Column(name = "stated")
+    private String stated;
+
+    /**
+     * 风向控制1
+     * */
+    @Column(name = "winda")
+    private String winda;
+
+    /**
+     * 风向控制2
+     * */
+    @Column(name = "windb")
+    private String windb;
+
+
+    /**
+     * 压力控制
+     * */
+    @Column(name = "press")
+    private Float press;
+
+    /**
+     * 传输频率
+     * */
+    @Column(name = "rate")
+    private String rate;
+
+    /**
+     * 水位值
+     * */
+    @Column(name = "water")
+    private String water;
+
+    public String getWater() {
+        return water;
+    }
+
+    public void setWater(String water) {
+        this.water = water;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(Integer deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
+
     public Integer getWorkMode() {
         return workMode;
     }
@@ -30,545 +162,131 @@ public class DevicesReg implements Serializable {
         this.workMode = workMode;
     }
 
-    /**
-     * 定时起始时间
-     * */
-    @Column(name = "start_timea")
-    private String startTime1a;
-    /**
-     * 定时结束时间
-     * */
-    @Column(name = "end_timea")
-    private String endTime1a;
-    /**
-     * 压力控制
-     * */
-    @Column(name = "press")
-    private String press;
-
-
-
-    public String getStartTime1a() {
-        return startTime1a;
+    public String getStartTimea() {
+        return startTimea;
     }
 
-    public void setStartTime1a(String startTime1a) {
-        this.startTime1a = startTime1a;
+    public void setStartTimea(String startTimea) {
+        this.startTimea = startTimea;
     }
 
-    public String getEndTime1a() {
-        return endTime1a;
+    public String getEndTimea() {
+        return endTimea;
     }
 
-    public void setEndTime1a(String endTime1a) {
-        this.endTime1a = endTime1a;
+    public void setEndTimea(String endTimea) {
+        this.endTimea = endTimea;
     }
 
-    public String getPress() {
+    public String getStatea() {
+        return statea;
+    }
+
+    public void setStatea(String statea) {
+        this.statea = statea;
+    }
+
+    public String getStartTimeb() {
+        return startTimeb;
+    }
+
+    public void setStartTimeb(String startTimeb) {
+        this.startTimeb = startTimeb;
+    }
+
+    public String getEndTimeb() {
+        return endTimeb;
+    }
+
+    public void setEndTimeb(String endTimeb) {
+        this.endTimeb = endTimeb;
+    }
+
+    public String getStateb() {
+        return stateb;
+    }
+
+    public void setStateb(String stateb) {
+        this.stateb = stateb;
+    }
+
+    public String getStartTimec() {
+        return startTimec;
+    }
+
+    public void setStartTimec(String startTimec) {
+        this.startTimec = startTimec;
+    }
+
+    public String getEndTimec() {
+        return endTimec;
+    }
+
+    public void setEndTimec(String endTimec) {
+        this.endTimec = endTimec;
+    }
+
+    public String getStatec() {
+        return statec;
+    }
+
+    public void setStatec(String statec) {
+        this.statec = statec;
+    }
+
+    public String getStartTimed() {
+        return startTimed;
+    }
+
+    public void setStartTimed(String startTimed) {
+        this.startTimed = startTimed;
+    }
+
+    public String getEndTimed() {
+        return endTimed;
+    }
+
+    public void setEndTimed(String endTimed) {
+        this.endTimed = endTimed;
+    }
+
+    public String getStated() {
+        return stated;
+    }
+
+    public void setStated(String stated) {
+        this.stated = stated;
+    }
+
+    public String getWinda() {
+        return winda;
+    }
+
+    public void setWinda(String winda) {
+        this.winda = winda;
+    }
+
+    public String getWindb() {
+        return windb;
+    }
+
+    public void setWindb(String windb) {
+        this.windb = windb;
+    }
+
+    public Float getPress() {
         return press;
     }
 
-    public void setPress(String press) {
+    public void setPress(Float press) {
         this.press = press;
     }
 
-    /**
-     * 开关门告警延迟时间 1-60 s
-     */
-    @Column(name = "door_alarm_delaytime")
-    private String doorAlarmDelaytime;
-
-    /**
-     * 照明灯控制上限 1-65535
-     */
-    @Column(name = "lighting_upperlimit")
-    private String lightingUpperlimit;
-
-    /**
-     * 照明灯控制下限 1-65535
-     */
-    @Column(name = "lighting_lowerlimit")
-    private String lightingLowerlimit;
-
-    /**
-     * 温度控制上限 `-40-125
-     */
-    @Column(name = "temperature_uppperlimit")
-    private String temperatureUppperlimit;
-
-    /**
-     * 温度控制下限 `-40-125
-     */
-    @Column(name = "temperature_lowerlimit")
-    private String temperatureLowerlimit;
-
-    /**
-     * 电流上限 0-500
-     */
-    @Column(name = "voltage_upperlimit")
-    private String voltageUpperlimit;
-
-    /**
-     * 电压下限 0-500
-     */
-    @Column(name = "voltage_lowerlimit")
-    private String voltageLowerlimit;
-
-    /**
-     * 电流上限 0-10
-     */
-    @Column(name = "current_upperlimit")
-    private String currentUpperlimit;
-
-    /**
-     * 漏电流上限 0 - 1
-     */
-    @Column(name = "current_leakagelimit")
-    private String currentLeakagelimit;
-
-    /**
-     * UPS 预警电压上限 0-100
-     */
-    @Column(name = "ups_warningvoltageupper")
-    private String upsWarningvoltageupper;
-
-    /**
-     * UPS 预警电压下限 0-100
-     */
-    @Column(name = "ups_warningvoltagelower")
-    private String upsWarningvoltagelower;
-
-    /**
-     * UPS 预警容量上限 0-1000000
-     */
-    @Column(name = "ups_warningcapacityupper")
-    private String upsWarningcapacityupper;
-
-    /**
-     * UPS 预警容量下限 0-1000000
-     */
-    @Column(name = "ups_warningcapacitylower")
-    private String upsWarningcapacitylower;
-
-    /**
-     * UPS 充电电流上限告警值 0-100A
-     */
-    @Column(name = "ups_chargeupperlimit")
-    private String upsChargeupperlimit;
-
-    /**
-     * UPS 充电电流下限告警值 0-100A
-     */
-    @Column(name = "ups_chargelowerlimit")
-    private String upsChargelowerlimit;
-
-    /**
-     * UPS 放电电流上限告警值 0-100A
-     */
-    @Column(name = "ups_dischargeupperlimit")
-    private String upsDischargeupperlimit;
-
-    /**
-     * UPS 放电电流下限告警值 0-100A
-     */
-    @Column(name = "ups_dischargelowerlimit")
-    private String upsDischargelowerlimit;
-
-    /**
-     * UPS 温度告警上限 -40~125
-     */
-    @Column(name = "ups_temperatureupperlimit")
-    private String upsTemperatureupperlimit;
-
-    /**
-     * UPS 温度告警下限 `-40~125
-     */
-    @Column(name = "ups_temperaturelowerlimit")
-    private String upsTemperaturelowerlimit;
-
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * @return id
-     */
-    public Integer getId() {
-        return id;
+    public String getRate() {
+        return rate;
     }
 
-    /**
-     * @param id
-     */
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    /**
-     * @return device_id
-     */
-    public Integer getDeviceId() {
-        return deviceId;
-    }
-
-    /**
-     * @param deviceId
-     */
-    public void setDeviceId(Integer deviceId) {
-        this.deviceId = deviceId;
-    }
-
-    /**
-     * @return update_time
-     */
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    /**
-     * @param updateTime
-     */
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    /**
-     * 获取开关门告警延迟时间 1-60 s
-     *
-     * @return door_alarm_delaytime - 开关门告警延迟时间 1-60 s
-     */
-    public String getDoorAlarmDelaytime() {
-        return doorAlarmDelaytime;
-    }
-
-    /**
-     * 设置开关门告警延迟时间 1-60 s
-     *
-     * @param doorAlarmDelaytime 开关门告警延迟时间 1-60 s
-     */
-    public void setDoorAlarmDelaytime(String doorAlarmDelaytime) {
-        this.doorAlarmDelaytime = doorAlarmDelaytime == null ? null : doorAlarmDelaytime.trim();
-    }
-
-    /**
-     * 获取照明灯控制上限 1-65535
-     *
-     * @return lighting_upperlimit - 照明灯控制上限 1-65535
-     */
-    public String getLightingUpperlimit() {
-        return lightingUpperlimit;
-    }
-
-    /**
-     * 设置照明灯控制上限 1-65535
-     *
-     * @param lightingUpperlimit 照明灯控制上限 1-65535
-     */
-    public void setLightingUpperlimit(String lightingUpperlimit) {
-        this.lightingUpperlimit = lightingUpperlimit == null ? null : lightingUpperlimit.trim();
-    }
-
-    /**
-     * 获取照明灯控制下限 1-65535
-     *
-     * @return lighting_lowerlimit - 照明灯控制下限 1-65535
-     */
-    public String getLightingLowerlimit() {
-        return lightingLowerlimit;
-    }
-
-    /**
-     * 设置照明灯控制下限 1-65535
-     *
-     * @param lightingLowerlimit 照明灯控制下限 1-65535
-     */
-    public void setLightingLowerlimit(String lightingLowerlimit) {
-        this.lightingLowerlimit = lightingLowerlimit == null ? null : lightingLowerlimit.trim();
-    }
-
-    /**
-     * 获取温度控制上限 `-40-125
-     *
-     * @return temperature_uppperlimit - 温度控制上限 `-40-125
-     */
-    public String getTemperatureUppperlimit() {
-        return temperatureUppperlimit;
-    }
-
-    /**
-     * 设置温度控制上限 `-40-125
-     *
-     * @param temperatureUppperlimit 温度控制上限 `-40-125
-     */
-    public void setTemperatureUppperlimit(String temperatureUppperlimit) {
-        this.temperatureUppperlimit = temperatureUppperlimit == null ? null : temperatureUppperlimit.trim();
-    }
-
-    /**
-     * 获取温度控制下限 `-40-125
-     *
-     * @return temperature_lowerlimit - 温度控制下限 `-40-125
-     */
-    public String getTemperatureLowerlimit() {
-        return temperatureLowerlimit;
-    }
-
-    /**
-     * 设置温度控制下限 `-40-125
-     *
-     * @param temperatureLowerlimit 温度控制下限 `-40-125
-     */
-    public void setTemperatureLowerlimit(String temperatureLowerlimit) {
-        this.temperatureLowerlimit = temperatureLowerlimit == null ? null : temperatureLowerlimit.trim();
-    }
-
-    /**
-     * 获取电流上限 0-500
-     *
-     * @return voltage_upperlimit - 电流上限 0-500
-     */
-    public String getVoltageUpperlimit() {
-        return voltageUpperlimit;
-    }
-
-    /**
-     * 设置电流上限 0-500
-     *
-     * @param voltageUpperlimit 电流上限 0-500
-     */
-    public void setVoltageUpperlimit(String voltageUpperlimit) {
-        this.voltageUpperlimit = voltageUpperlimit == null ? null : voltageUpperlimit.trim();
-    }
-
-    /**
-     * 获取电压下限 0-500
-     *
-     * @return voltage_lowerlimit - 电压下限 0-500
-     */
-    public String getVoltageLowerlimit() {
-        return voltageLowerlimit;
-    }
-
-    /**
-     * 设置电压下限 0-500
-     *
-     * @param voltageLowerlimit 电压下限 0-500
-     */
-    public void setVoltageLowerlimit(String voltageLowerlimit) {
-        this.voltageLowerlimit = voltageLowerlimit == null ? null : voltageLowerlimit.trim();
-    }
-
-    /**
-     * 获取电流上限 0-10
-     *
-     * @return current_upperlimit - 电流上限 0-10
-     */
-    public String getCurrentUpperlimit() {
-        return currentUpperlimit;
-    }
-
-    /**
-     * 设置电流上限 0-10
-     *
-     * @param currentUpperlimit 电流上限 0-10
-     */
-    public void setCurrentUpperlimit(String currentUpperlimit) {
-        this.currentUpperlimit = currentUpperlimit == null ? null : currentUpperlimit.trim();
-    }
-
-    /**
-     * 获取漏电流上限 0 - 1
-     *
-     * @return current_leakagelimit - 漏电流上限 0 - 1
-     */
-    public String getCurrentLeakagelimit() {
-        return currentLeakagelimit;
-    }
-
-    /**
-     * 设置漏电流上限 0 - 1
-     *
-     * @param currentLeakagelimit 漏电流上限 0 - 1
-     */
-    public void setCurrentLeakagelimit(String currentLeakagelimit) {
-        this.currentLeakagelimit = currentLeakagelimit == null ? null : currentLeakagelimit.trim();
-    }
-
-    /**
-     * 获取UPS 预警电压上限 0-100
-     *
-     * @return ups_warningvoltageupper - UPS 预警电压上限 0-100
-     */
-    public String getUpsWarningvoltageupper() {
-        return upsWarningvoltageupper;
-    }
-
-    /**
-     * 设置UPS 预警电压上限 0-100
-     *
-     * @param upsWarningvoltageupper UPS 预警电压上限 0-100
-     */
-    public void setUpsWarningvoltageupper(String upsWarningvoltageupper) {
-        this.upsWarningvoltageupper = upsWarningvoltageupper == null ? null : upsWarningvoltageupper.trim();
-    }
-
-    /**
-     * 获取UPS 预警电压下限 0-100
-     *
-     * @return ups_warningvoltagelower - UPS 预警电压下限 0-100
-     */
-    public String getUpsWarningvoltagelower() {
-        return upsWarningvoltagelower;
-    }
-
-    /**
-     * 设置UPS 预警电压下限 0-100
-     *
-     * @param upsWarningvoltagelower UPS 预警电压下限 0-100
-     */
-    public void setUpsWarningvoltagelower(String upsWarningvoltagelower) {
-        this.upsWarningvoltagelower = upsWarningvoltagelower == null ? null : upsWarningvoltagelower.trim();
-    }
-
-    /**
-     * 获取UPS 预警容量上限 0-1000000
-     *
-     * @return ups_warningcapacityupper - UPS 预警容量上限 0-1000000
-     */
-    public String getUpsWarningcapacityupper() {
-        return upsWarningcapacityupper;
-    }
-
-    /**
-     * 设置UPS 预警容量上限 0-1000000
-     *
-     * @param upsWarningcapacityupper UPS 预警容量上限 0-1000000
-     */
-    public void setUpsWarningcapacityupper(String upsWarningcapacityupper) {
-        this.upsWarningcapacityupper = upsWarningcapacityupper == null ? null : upsWarningcapacityupper.trim();
-    }
-
-    /**
-     * 获取UPS 预警容量下限 0-1000000
-     *
-     * @return ups_warningcapacitylower - UPS 预警容量下限 0-1000000
-     */
-    public String getUpsWarningcapacitylower() {
-        return upsWarningcapacitylower;
-    }
-
-    /**
-     * 设置UPS 预警容量下限 0-1000000
-     *
-     * @param upsWarningcapacitylower UPS 预警容量下限 0-1000000
-     */
-    public void setUpsWarningcapacitylower(String upsWarningcapacitylower) {
-        this.upsWarningcapacitylower = upsWarningcapacitylower == null ? null : upsWarningcapacitylower.trim();
-    }
-
-    /**
-     * 获取UPS 充电电流上限告警值 0-100A
-     *
-     * @return ups_chargeupperlimit - UPS 充电电流上限告警值 0-100A
-     */
-    public String getUpsChargeupperlimit() {
-        return upsChargeupperlimit;
-    }
-
-    /**
-     * 设置UPS 充电电流上限告警值 0-100A
-     *
-     * @param upsChargeupperlimit UPS 充电电流上限告警值 0-100A
-     */
-    public void setUpsChargeupperlimit(String upsChargeupperlimit) {
-        this.upsChargeupperlimit = upsChargeupperlimit == null ? null : upsChargeupperlimit.trim();
-    }
-
-    /**
-     * 获取UPS 充电电流下限告警值 0-100A
-     *
-     * @return ups_chargelowerlimit - UPS 充电电流下限告警值 0-100A
-     */
-    public String getUpsChargelowerlimit() {
-        return upsChargelowerlimit;
-    }
-
-    /**
-     * 设置UPS 充电电流下限告警值 0-100A
-     *
-     * @param upsChargelowerlimit UPS 充电电流下限告警值 0-100A
-     */
-    public void setUpsChargelowerlimit(String upsChargelowerlimit) {
-        this.upsChargelowerlimit = upsChargelowerlimit == null ? null : upsChargelowerlimit.trim();
-    }
-
-    /**
-     * 获取UPS 放电电流上限告警值 0-100A
-     *
-     * @return ups_dischargeupperlimit - UPS 放电电流上限告警值 0-100A
-     */
-    public String getUpsDischargeupperlimit() {
-        return upsDischargeupperlimit;
-    }
-
-    /**
-     * 设置UPS 放电电流上限告警值 0-100A
-     *
-     * @param upsDischargeupperlimit UPS 放电电流上限告警值 0-100A
-     */
-    public void setUpsDischargeupperlimit(String upsDischargeupperlimit) {
-        this.upsDischargeupperlimit = upsDischargeupperlimit == null ? null : upsDischargeupperlimit.trim();
-    }
-
-    /**
-     * 获取UPS 放电电流下限告警值 0-100A
-     *
-     * @return ups_dischargelowerlimit - UPS 放电电流下限告警值 0-100A
-     */
-    public String getUpsDischargelowerlimit() {
-        return upsDischargelowerlimit;
-    }
-
-    /**
-     * 设置UPS 放电电流下限告警值 0-100A
-     *
-     * @param upsDischargelowerlimit UPS 放电电流下限告警值 0-100A
-     */
-    public void setUpsDischargelowerlimit(String upsDischargelowerlimit) {
-        this.upsDischargelowerlimit = upsDischargelowerlimit == null ? null : upsDischargelowerlimit.trim();
-    }
-
-    /**
-     * 获取UPS 温度告警上限 -40~125
-     *
-     * @return ups_temperatureupperlimit - UPS 温度告警上限 -40~125
-     */
-    public String getUpsTemperatureupperlimit() {
-        return upsTemperatureupperlimit;
-    }
-
-    /**
-     * 设置UPS 温度告警上限 -40~125
-     *
-     * @param upsTemperatureupperlimit UPS 温度告警上限 -40~125
-     */
-    public void setUpsTemperatureupperlimit(String upsTemperatureupperlimit) {
-        this.upsTemperatureupperlimit = upsTemperatureupperlimit == null ? null : upsTemperatureupperlimit.trim();
-    }
-
-    /**
-     * 获取UPS 温度告警下限 `-40~125
-     *
-     * @return ups_temperaturelowerlimit - UPS 温度告警下限 `-40~125
-     */
-    public String getUpsTemperaturelowerlimit() {
-        return upsTemperaturelowerlimit;
-    }
-
-    /**
-     * 设置UPS 温度告警下限 `-40~125
-     *
-     * @param upsTemperaturelowerlimit UPS 温度告警下限 `-40~125
-     */
-    public void setUpsTemperaturelowerlimit(String upsTemperaturelowerlimit) {
-        this.upsTemperaturelowerlimit = upsTemperaturelowerlimit == null ? null : upsTemperaturelowerlimit.trim();
+    public void setRate(String rate) {
+        this.rate = rate;
     }
 }

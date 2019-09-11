@@ -11,7 +11,7 @@ import tk.mybatis.mapper.common.Mapper;
 
 public interface DevicesEventRecMapper extends Mapper<DevicesEventRec> {
 
-	public List<EventVO> get_eventList(@Param("id") Integer id ,@Param("eventName") String eventName, @Param("devNum") String devNum);
+	public List<EventVO> get_eventList(@Param("id") Integer id );
 
 	public List<AiDiDoutVO> get_eventTypeOfgroup();
 

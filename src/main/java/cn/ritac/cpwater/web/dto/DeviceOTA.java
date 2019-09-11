@@ -14,7 +14,7 @@ public class DeviceOTA {
     /**
      * ota升级包路径
      * */
-    private String ota_url;
+    private String otaUrl;
     /**
      * 加载路径
      * */
@@ -22,32 +22,31 @@ public class DeviceOTA {
     /**
      * 版本
      * */
-    private String ota_version;
+    private String otaVersion;
     /**
      * 文件名称
      * */
-    private String ota_name;
+    private String otaName;
     /**
      * 文件大小
      * */
-    private String ota_size;
+    private String otaSize;
     /**
      * MD5校验码
      * */
-    private String ota_code;
+    private String otaCode;
     /**
      * 升级包所实用的产品类型
      * */
-    private String ota_productId;
+    private String otaProductId;
     /**
      * 升级包所适用的设备id
      * */
-    private String ota_deviceId;
+    private String otaDeviceId;
     /**
      *
      * */
-    private Date upload_time;
-
+    private Date uploadTime;
 
     public Integer getId() {
         return id;
@@ -57,12 +56,12 @@ public class DeviceOTA {
         this.id = id;
     }
 
-    public String getOta_url() {
-        return ota_url;
+    public String getOtaUrl() {
+        return otaUrl;
     }
 
-    public void setOta_url(String ota_url) {
-        this.ota_url = ota_url;
+    public void setOtaUrl(String otaUrl) {
+        this.otaUrl = otaUrl;
     }
 
     public String getUploadPath() {
@@ -73,59 +72,59 @@ public class DeviceOTA {
         this.uploadPath = uploadPath;
     }
 
-    public String getOta_version() {
-        return ota_version;
+    public String getOtaVersion() {
+        return otaVersion;
     }
 
-    public void setOta_version(String ota_version) {
-        this.ota_version = ota_version;
+    public void setOtaVersion(String otaVersion) {
+        this.otaVersion = otaVersion;
     }
 
-    public String getOta_name() {
-        return ota_name;
+    public String getOtaName() {
+        return otaName;
     }
 
-    public void setOta_name(String ota_name) {
-        this.ota_name = ota_name;
+    public void setOtaName(String otaName) {
+        this.otaName = otaName;
     }
 
-    public String getOta_size() {
-        return ota_size;
+    public String getOtaSize() {
+        return otaSize;
     }
 
-    public void setOta_size(String ota_size) {
-        this.ota_size = ota_size;
+    public void setOtaSize(String otaSize) {
+        this.otaSize = otaSize;
     }
 
-    public String getOta_code() {
-        return ota_code;
+    public String getOtaCode() {
+        return otaCode;
     }
 
-    public void setOta_code(String ota_code) {
-        this.ota_code = ota_code;
+    public void setOtaCode(String otaCode) {
+        this.otaCode = otaCode;
     }
 
-    public String getOta_productId() {
-        return ota_productId;
+    public String getOtaProductId() {
+        return otaProductId;
     }
 
-    public void setOta_productId(String ota_productId) {
-        this.ota_productId = ota_productId;
+    public void setOtaProductId(String otaProductId) {
+        this.otaProductId = otaProductId;
     }
 
-    public String getOta_deviceId() {
-        return ota_deviceId;
+    public String getOtaDeviceId() {
+        return otaDeviceId;
     }
 
-    public void setOta_deviceId(String ota_deviceId) {
-        this.ota_deviceId = ota_deviceId;
+    public void setOtaDeviceId(String otaDeviceId) {
+        this.otaDeviceId = otaDeviceId;
     }
 
-    public Date getUpload_time() {
-        return upload_time;
+    public Date getUploadTime() {
+        return uploadTime;
     }
 
-    public void setUpload_time(Date upload_time) {
-        this.upload_time = upload_time;
+    public void setUploadTime(Date upload_time) {
+        this.uploadTime = upload_time;
     }
 }

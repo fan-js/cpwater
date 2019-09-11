@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import cn.ritac.cpwater.mybatis.mapper.DevicesEventRecMapper;
 import cn.ritac.cpwater.mybatis.model.*;
 import cn.ritac.cpwater.service.*;
 import cn.ritac.cpwater.web.dto.*;
@@ -70,6 +71,9 @@ public class DevicesController extends BaseController {
 	private DevicesService devicesService;
 	@Autowired
 	private UsersService usersService;
+
+	@Autowired
+	private MQTTService MQTTService;
 	@Autowired
 	private DevicesAIService devicesAIService;
 	@Autowired
@@ -105,6 +109,9 @@ public class DevicesController extends BaseController {
 	@Autowired
 	private RolesService rolesService;
 
+	@Autowired
+	private DevicesEventRecMapper devicesEventRecMapper;
+
 	/**
 	 * 得到设备列表
 	 * @param
@@ -131,12 +138,6 @@ public class DevicesController extends BaseController {
 		}
 		Integer pageIndex = devDto.getPageIndex();
 		Integer pageSize = devDto.getPageSize();
-		String devNum = devDto.getDeviceNum();
-		String devModel = devDto.getDeviceModel();
-		String devPosit = devDto.getPositionDes();
-		String devRemark = devDto.getRemark();
-		Boolean on_line = devDto.getOnline();
-		Integer groupId = devDto.getGroupId();
 		//分两种身份1：厂家直接获取所有设备 2：用户获取自己绑定的设备
 		//判断用户身份
 		PageInfo<DevicesDto> devList;
@@ -151,36 +152,38 @@ public class DevicesController extends BaseController {
 			//用户查询设备
 			devList = devicesService.findDeviceByUser(pageIndex, pageSize,userName);
 		}
-
 		return returnLogic.resultJsonString(200, "查询成功。", devList);
 	}
 
 
 	/**
-	 * 为设备增加摄像头地址
-	 * */
-	@PostMapping("/camera")
-	public String camera(@RequestBody DeviceCameraDto deviceCameraDto){
-		Subject subject = SecurityUtils.getSubject();
+	 * 管理员用户列表内得到设备列表
+	 * @param
+	 * @param
+	 * @param
+	 * @return
+	 */
+	@PostMapping("/getUserDevices")
+	public String getUserDevices(@RequestBody DevicesDto devDto) {
+		// 首先，检测用户登录状态；
+//		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		if (StringUtils.isEmpty(deviceCameraDto)) {
-			return returnLogic.resultErrorJsonString(206, "参数错误。");
+		if (StringUtils.isEmpty(devDto)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
-		DeviceCamera deviceCamera=new DeviceCamera();
-		deviceCamera.setUrl(deviceCameraDto.getUrl());
-		deviceCamera=deviceCameraService.find(deviceCamera);
-		if(!StringUtils.isEmpty(deviceCamera)){
-			return returnLogic.resultErrorJsonString(206, "地址已被使用，请确认后操作！");
-		}
-		DeviceCamera dc=new DeviceCamera();
-		dc.setUrl(deviceCameraDto.getUrl());
-		dc.setDeviceNum(deviceCameraDto.getDeviceNum());
-		dc.setUpdateTime(new Date());
-		deviceCameraService.save(dc);
-		return returnLogic.resultErrorJsonString(200, "配置成功。");
+		Integer pageIndex = devDto.getPageIndex();
+		Integer pageSize = devDto.getPageSize();
+		//分两种身份1：厂家直接获取所有设备 2：用户获取自己绑定的设备
+		//判断用户身份
+		PageInfo<DevicesDto> devList;
+			//根据用户的手机号查询用户的设备
+			devList = devicesService.findDeviceByUser(pageIndex, pageSize,devDto.getUserphone());
+		return returnLogic.resultJsonString(200, "查询成功。", devList);
 	}
+
+
 
 	/**
 	 * 用户绑定设备
@@ -219,54 +222,63 @@ public class DevicesController extends BaseController {
 	}
 
 
-
 	/**
-	 * 返回所有设备
-	 * @return list
-	 */
-	@GetMapping(value = "/allDevices")
-	public String getDevicesNoPage() {
-		// 首先，检测用户登录状态；
+	 * 为设备增加摄像头地址
+	 * */
+	@PostMapping("/camera")
+	public String camera(@RequestBody DeviceCameraDto deviceCameraDto){
 		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		List<Devices> devList = devicesService.getDevicesNoPage();
-		return returnLogic.resultJsonString(200, "查询成功。", devList);
+		if (StringUtils.isEmpty(deviceCameraDto)) {
+			return returnLogic.resultErrorJsonString(206, "参数错误。");
+		}
+		DeviceCamera deviceCamera=new DeviceCamera();
+		deviceCamera.setUrl(deviceCameraDto.getUrl());
+		deviceCamera=deviceCameraService.find(deviceCamera);
+		if(!StringUtils.isEmpty(deviceCamera)){
+			return returnLogic.resultErrorJsonString(206, "地址已被使用，请确认后操作！");
+		}
+		DeviceCamera dc=new DeviceCamera();
+		dc.setUrl(deviceCameraDto.getUrl());
+		dc.setDeviceNum(deviceCameraDto.getDeviceNum());
+		dc.setUpdateTime(new Date());
+		deviceCameraService.save(dc);
+		return returnLogic.resultJson(200, "配置成功。");
 	}
 
 	/**
-	 * 得到设备的基本信息
-	 * 
-	 * @param id
-	 * @return
-	 */
-	@GetMapping("/getDeviceBase")
-	public String getDeviceBase(Integer id) {
+	 * 查看设备摄像头
+	 * */
+	@GetMapping("/getCamera")
+	public String getCamera(@RequestBody DeviceCameraDto deviceCameraDto){
 		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		if (StringUtils.isEmpty(id)) {
-			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		if (StringUtils.isEmpty(deviceCameraDto)) {
+			return returnLogic.resultErrorJsonString(206, "参数错误。");
 		}
-		Devices devices = new Devices();
-		devices.setId(id);
-		Devices dev = devicesService.find(devices);
-		if (!StringUtils.isEmpty(dev)) {
-			// if (!StringUtils.isEmpty(dev.getIsfault())) {
-			// dev.setIsfault_zh(dev.getIsfault() == true ? "故障" : "正常");
-			// }
-			if (!StringUtils.isEmpty(dev.getConnform())) {
-				dev.setConnform_zh(dev.getConnform() == 1 ? "GSM" : dev.getConnform() == 2 ? "LAN" : "WLAN");
-			}
+		DeviceCamera deviceCamera=new DeviceCamera();
+		deviceCamera.setDeviceNum(deviceCameraDto.getDeviceNum());
+		deviceCamera=deviceCameraService.find(deviceCamera);
+		if(StringUtils.isEmpty(deviceCamera)){
+			return returnLogic.resultErrorJsonString(206, "地址不存在，请联系管理员添加！");
 		}
-		return returnLogic.resultJsonString(200, "查询成功。", dev);
+		DeviceCamera dc=new DeviceCamera();
+		dc.setUrl(deviceCamera.getUrl());
+		dc.setDeviceNum(deviceCamera.getDeviceNum());
+		dc.setUpdateTime(deviceCamera.getUpdateTime());
+		dc.setId(deviceCamera.getId());
+		return returnLogic.resultJsonString(200, "获取地址成功！",dc);
 	}
 
+
+
 	/**
-	 * 保存设备的基本信息
-	 * 
+	 * 保存修改设备基本信息
+	 *
 	 * @param
 	 * @return
 	 */
@@ -284,8 +296,6 @@ public class DevicesController extends BaseController {
 //		if (StringUtils.isEmpty(userName)) {
 //			return returnLogic.resultErrorJsonString(401, "登录已失效，请先登录！");
 //		}
-		Roles r = rolesService.findRoleForUser("administrator", "administrator", userName);
-		Boolean isAdmin = r == null ? true : false;
 		List<DeviceFuction> df = devicesFunctionService.findDeviceFunctionByRoleId(userName);
 
 		if (StringUtils.isEmpty(devDto)) {
@@ -297,9 +307,6 @@ public class DevicesController extends BaseController {
 		String msg = "添加成功。";
 		// 修改
 		if (devId > 0) {
-			if ((StringUtils.isEmpty(df) || df.size() == 0) && isAdmin) {
-				return returnLogic.resultErrorJsonString(403, "执行失败，当前用户无权操作。");
-			}
 			Devices devicesInfo = devicesService.findById(devId);
 			if (devicesInfo == null) {
 				return returnLogic.resultErrorJsonString(206, "不存在该设备");
@@ -318,15 +325,37 @@ public class DevicesController extends BaseController {
 			devicesService.update(devicesInfo);
 			msg = "修改成功。";
 		} else {
-			/*	if (StringUtils.isEmpty(df) || (!StringUtils.isEmpty(df.getAddDevice()) && !df.getAddDevice())) {
-					return returnLogic.resultErrorJsonString(403, "执行失败，当前用户无权操作。");
-				}*/
 			// 新增
 			pojo.setCreateTime(new Date());
 			devicesService.save(pojo);
 		}
 		return returnLogic.resultJson(200, msg);
 	}
+
+
+
+	/**
+	 * 修改设备信息时，返回设备的基本信息
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/getDeviceBase")
+	public String getDeviceBase(Integer id) {
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		if (StringUtils.isEmpty(id)) {
+			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
+		}
+		Devices devices = new Devices();
+		devices.setId(id);
+		Devices dev = devicesService.find(devices);
+		return returnLogic.resultJsonString(200, "查询成功。", dev);
+	}
+
+
 
 	/**
 	 * 删除设备
@@ -338,7 +367,7 @@ public class DevicesController extends BaseController {
 	@Transactional
 	public String deleteDevice(Integer id) {
 		// 首先，检测用户登录状态；
-		Subject subject = SecurityUtils.getSubject();
+//		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
@@ -352,26 +381,17 @@ public class DevicesController extends BaseController {
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
-		// 验证角色资产修改权限
-		/*Roles r = rolesService.findRoleForUser(userName);
-		int roleId = r.getId();
-		DeviceFuction df = devicesFunctionService.findDeviceFunctionByRoleId(roleId);
-		if (StringUtils.isEmpty(df) || (!StringUtils.isEmpty(df.getDelDevice()) && !df.getDelDevice())) {
-			return returnLogic.resultErrorJsonString(403, "执行失败，当前用户无权操作。");
-		}*/
 		Devices deviceInfo = devicesService.findById(id);
 		if (deviceInfo == null) {
 			return returnLogic.resultErrorJsonString(206, "没有该设备,删除失败");
 		}
-		// 删除设备
+		// 删除设备列表里的设备
 		devicesService.delete(new Integer[] { id });
-		// cpwater_group_device , cpwater_role_device
-		RoleDevice rd = new RoleDevice();
-		rd.setDeviceId(id);
-		rolesDeviceService.deleteByObj(rd);
-		GroupDevice gd = new GroupDevice();
-		gd.setDeviceId(id);
-		groupDeviceService.deleteByObj(gd);
+		//删除与用户的绑定
+		DeviceAndUser deviceAndUser=new DeviceAndUser();
+		deviceAndUser.setDeviceNum(id);
+		deviceAndUser=deviceAndUserService.find(deviceAndUser);
+		deviceAndUserService.delete(new Integer[] { deviceAndUser.getId() });
 		return returnLogic.resultSuccess();
 	}
 
@@ -386,7 +406,21 @@ public class DevicesController extends BaseController {
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		List<ProporVO> deviceProporList = devicesService.deviceProporList();
+		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
+				: httpServletRequest.getHeader("Authorization");
+		// 电话号码
+		String userPhone = JWTUtil.getUsername(tk);
+		List<ProporVO> deviceProporList;
+		Users searchUser = new Users();
+		searchUser.setTelephone(userPhone);
+		Users users = usersService.find(searchUser);
+		String type=users.getType();
+		String phone=null;
+		if("0".equals(type)){
+			//厂家查询设备
+			phone=userPhone;
+		}
+			deviceProporList = devicesService.deviceProporList("phone");
 		return returnLogic.resultJsonString(200, "查询成功", deviceProporList);
 	}
 
@@ -401,12 +435,12 @@ public class DevicesController extends BaseController {
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		List<ProporVO> eventProporList = devicesService.eventProporList();
+		List<ProporVO> eventProporList = devicesService.eventProporList("");
 		return returnLogic.resultJsonString(200, "查询成功", eventProporList);
 	}
 
 	/**
-	* 
+	*
 	* @param
 	* @return
 	*/
@@ -426,28 +460,28 @@ public class DevicesController extends BaseController {
 	}
 
 	/**
-	* 
+	*
 	* @param
 	* @return
 	*/
 
 	@GetMapping("/getDeviceDI")
-	public String getDeviceDI(int deviceId) {
+	public String getDeviceDI(int id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		if (StringUtils.isEmpty(deviceId)) {
+		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
-		Map<String, Object> diMap = devicesService.sendDi(deviceId);
+		Map<String, Object> diMap = devicesService.sendDi(id);
 		return returnLogic.resultJsonString(200, "查询成功", diMap);
 
 	}
 
 	/**
-	* 
+	*
 	* @param
 	* @return
 	*/
@@ -657,12 +691,13 @@ public class DevicesController extends BaseController {
 	}
 
 	/**
-	 * 根据主键获取设备存库配置
+	 * 根据主键获取设备配置
+	 * REG配置信息
 	 * @param id
 	 * @return settingConfigPojo
 	 */
-	@GetMapping("/findSettingConfig")
-	public String findSettingConfig(Integer id) {
+	@GetMapping("/getDeviceConfig")
+	public String getDeviceConfig(Integer id) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
@@ -671,273 +706,14 @@ public class DevicesController extends BaseController {
 		if (StringUtils.isEmpty(id)) {
 			return returnLogic.resultErrorJsonString(206, "输入参数有误。");
 		}
-		List<SettingConfigPojo> settingConfigPojos = new ArrayList<SettingConfigPojo>();
 		// 获取设备当前配置
 		DevicesReg devReg = new DevicesReg();
 		devReg.setDeviceId(id);
 		devReg = devicesRegService.find(devReg);
-		if (!StringUtils.isEmpty(devReg)) {
-			// 外层
-			SettingConfigPojo settingConfigPojo = new SettingConfigPojo();
-			// 内层
-			List<SettingConfigVO> settingConfigVOs = new ArrayList<SettingConfigVO>();
-			SettingConfigVO settingConfigVO = new SettingConfigVO();
-
-			settingConfigVO.setKey("doorAlarmDelaytime");
-			settingConfigVO.setValue(devReg.getDoorAlarmDelaytime());
-			settingConfigVO.setName("范围值");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("开关门告警延迟时间");
-			settingConfigPojo.setKey("doorAlarmDelaytime");
-			settingConfigPojo.setDes("范围值: 1-60秒");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("lightingUpperlimit");
-			settingConfigVO.setValue(devReg.getLightingUpperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("lightingLowerlimit");
-			settingConfigVO.setValue(devReg.getLightingLowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-
-			settingConfigPojo.setTitle("照明灯控制");
-			settingConfigPojo.setKey("lighting");
-			settingConfigPojo.setDes("范围值: 1-65535 Lux");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("temperatureUppperlimit");
-			settingConfigVO.setValue(devReg.getTemperatureUppperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("temperatureLowerlimit");
-			settingConfigVO.setValue(devReg.getTemperatureLowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("温度控制");
-			settingConfigPojo.setKey("temperature");
-			settingConfigPojo.setDes("范围值: -40-125 ℃");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("voltageUpperlimit");
-			settingConfigVO.setValue(devReg.getVoltageUpperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("voltageLowerlimit");
-			settingConfigVO.setValue(devReg.getVoltageLowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("电压");
-			settingConfigPojo.setKey("voltage");
-			settingConfigPojo.setDes("范围值: 0-500 V");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("currentUpperlimit");
-			settingConfigVO.setValue(devReg.getCurrentUpperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("电流上限");
-			settingConfigPojo.setKey("currentUpperlimit");
-			settingConfigPojo.setDes("范围值: 0-10 A");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("currentLeakagelimit");
-			settingConfigVO.setValue(devReg.getCurrentLeakagelimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("漏电流上限");
-			settingConfigPojo.setKey("currentLeakagelimit");
-			settingConfigPojo.setDes("范围值: 0-1 A");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsWarningvoltageupper");
-			settingConfigVO.setValue(devReg.getUpsWarningvoltageupper());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsWarningvoltagelower");
-			settingConfigVO.setValue(devReg.getUpsWarningvoltagelower());
-			settingConfigVO.setName("下限");
-
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigPojo.setTitle("UPS预警电压");
-			settingConfigPojo.setKey("upsWarningvoltage");
-			settingConfigPojo.setDes("范围值: 0-100 V");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsWarningcapacityupper");
-			settingConfigVO.setValue(devReg.getUpsWarningcapacityupper());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsWarningcapacitylower");
-			settingConfigVO.setValue(devReg.getUpsWarningcapacitylower());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-
-			settingConfigPojo.setTitle("UPS预警容量");
-			settingConfigPojo.setKey("upsWarningcapacity");
-			settingConfigPojo.setDes("范围值: 0-1000000 V");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsChargeupperlimit");
-			settingConfigVO.setValue(devReg.getUpsChargeupperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsChargelowerlimit");
-			settingConfigVO.setValue(devReg.getUpsChargelowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-
-			settingConfigPojo.setTitle("UPS充电电流告警值");
-			settingConfigPojo.setKey("upsCharge");
-			settingConfigPojo.setDes("范围值: 0-100 A");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsDischargeupperlimit");
-			settingConfigVO.setValue(devReg.getUpsDischargeupperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsDischargelowerlimit");
-			settingConfigVO.setValue(devReg.getUpsDischargelowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-
-			settingConfigPojo.setTitle("UPS放电电流告警值");
-			settingConfigPojo.setKey("upsDischarge");
-			settingConfigPojo.setDes("范围值: 0-100 A");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-
-			settingConfigPojo = new SettingConfigPojo();
-			settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsTemperatureupperlimit");
-			settingConfigVO.setValue(devReg.getUpsTemperatureupperlimit());
-			settingConfigVO.setName("上限");
-			settingConfigVOs.add(settingConfigVO);
-			settingConfigVO = new SettingConfigVO();
-			settingConfigVO.setKey("upsTemperaturelowerlimit");
-			settingConfigVO.setValue(devReg.getUpsTemperaturelowerlimit());
-			settingConfigVO.setName("下限");
-			settingConfigVOs.add(settingConfigVO);
-
-			settingConfigPojo.setTitle("UPS温度告警");
-			settingConfigPojo.setKey("upsTemperature");
-			settingConfigPojo.setDes("范围值: -40-125 ℃");
-			settingConfigPojo.setValue(settingConfigVOs);
-			settingConfigPojos.add(settingConfigPojo);
-			RegCamera regCamera = new RegCamera();
-			regCamera.setDeviceId(id);
-			List<RegCamera> regCameraList = regCameraService.findList(regCamera);
-			if (!StringUtils.isEmpty(regCameraList)) {
-
-				for (int i = 0; i < regCameraList.size(); i++) {
-					int j = i;
-					++j;
-					RegCamera rc = regCameraList.get(i);
-
-					settingConfigPojo = new SettingConfigPojo();
-					settingConfigVOs = new ArrayList<SettingConfigVO>();
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("sn");
-					settingConfigVO.setValue(rc.getSn());
-					settingConfigVO.setName("序号");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("model");
-					settingConfigVO.setValue(rc.getModel());
-					settingConfigVO.setName("型号");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("mac");
-					settingConfigVO.setValue(rc.getMac());
-					settingConfigVO.setName("物理地址");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("ip");
-					settingConfigVO.setValue(rc.getIp());
-					settingConfigVO.setName("ip地址");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("state");
-					settingConfigVO.setValue(rc.getState());
-					settingConfigVO.setName("状态");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("account");
-					settingConfigVO.setValue(rc.getAccount());
-					settingConfigVO.setName("账号");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigVO = new SettingConfigVO();
-					settingConfigVO.setKey("password");
-					settingConfigVO.setValue(rc.getPassword());
-					settingConfigVO.setName("密码");
-					settingConfigVOs.add(settingConfigVO);
-
-					settingConfigPojo.setTitle("相机" + j);
-					settingConfigPojo.setKey("camera" + j);
-					settingConfigPojo.setDes("相机");
-					settingConfigPojo.setValue(settingConfigVOs);
-					settingConfigPojos.add(settingConfigPojo);
-				}
-			}
-
+		if(StringUtils.isEmpty(devReg)){
+			return returnLogic.resultErrorJsonString(206, "未获取到配置信息。");
 		}
-		return returnLogic.resultJsonString(200, "查询成功", settingConfigPojos);
+		return returnLogic.resultJsonString(200, "查询成功", devReg);
 	}
 
 	/**
@@ -978,16 +754,35 @@ public class DevicesController extends BaseController {
 	 * @return List<EventVO>
 	 */
 	@GetMapping(value = "/getEventList")
-	public String get_eventList(Integer id, String eventName, String devNum, Integer pageIndex, Integer pageSize) {
+	public String get_eventList(Integer id,Integer pageIndex,Integer pageSize) {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
 //		if (!subject.isAuthenticated()) {
 //			return returnLogic.resultErrorJsonString(401, "请先登录！");
 //		}
-		PageHelper.startPage(pageIndex, pageSize);
-		List<EventVO> resList = devicesService.get_eventList(id, eventName, devNum);
-		return returnLogic.resultJsonString(200, "查询成功", new PageInfo<>(resList));
+		PageInfo<EventVO> resList = devicesService.get_eventList(id,pageIndex,pageSize);
+		if(StringUtils.isEmpty(resList)){
+			return returnLogic.resultErrorJsonString(206, "该设备暂未上报事件！");
+		}
+		return returnLogic.resultJsonString(200, "查询成功", resList);
 	}
+
+	/**
+	 * 折线图
+	 * @return List<EventVO>
+	 */
+	@GetMapping(value = "/getCharts")
+	public String getCharts(Integer id) {
+		// 首先，检测用户登录状态；
+		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		MQTTService.GetCharts(id);
+		return returnLogic.resultJson(200, "查询成功"	);
+	}
+
+
 
 	/**
 	 * 按区域及事件类别统计,获取每个分组下每种事件数量
@@ -1027,11 +822,47 @@ public class DevicesController extends BaseController {
 	public String get_eventCount() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//
+//		}
 		List<AiDiDoutVO> resList = devicesService.get_eventCount();
 		return returnLogic.resultJsonString(200, "查询成功", resList);
+	}
+
+
+
+
+
+
+
+		/**
+	 * 返回所有设备
+	 * @return list
+	 */
+	@GetMapping(value = "/allDevices")
+	public String allDevices() {
+
+		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
+				: httpServletRequest.getHeader("Authorization");
+		// 电话号码
+		String phone = JWTUtil.getUsername(tk);
+		// 首先，检测用户登录状态；
+//		Subject subject = SecurityUtils.getSubject();
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+		List<Devices> devList;
+		Users searchUser = new Users();
+		searchUser.setTelephone(phone);
+		Users users = usersService.find(searchUser);
+		String type=users.getType();
+		String userPhone=null;
+		if("0".equals(type)){
+			//用户查询设备
+			userPhone=phone;
+		}
+		devList = devicesService.getDevicesNoPage(userPhone);
+		return returnLogic.resultJsonString(200, "查询成功。", devList);
 	}
 }
