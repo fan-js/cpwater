@@ -33,6 +33,8 @@ public class UserDto {
 
 	private int id;
 
+	private String type;
+
 	public int getId() {
 		return id;
 	}
@@ -147,6 +149,14 @@ public class UserDto {
 
 	public void setUserAccount(String userAccount) {
 		this.userAccount = userAccount;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@NotEmpty(message = "密码不能为空!")

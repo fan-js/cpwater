@@ -49,8 +49,8 @@ public class SendMassage{
         //test.put("uaer", "张三");
         SMSPayload payload = SMSPayload.newBuilder()
                 .setMobileNumber(phone)
-                .setTempId(168984)
-                // .setSignId(1380)169113
+                .setTempId(169113)
+                // .setSignId(1380)
                 //多参数时使用
                 // .setTempPara(test)
                 .addTempPara("msg", news)
@@ -67,7 +67,7 @@ public class SendMassage{
     public void sendBatchTemplateSMS(List phones,String news) {
         List<RecipientPayload> list = new ArrayList<RecipientPayload>();
         //1:信息格式统一直接循环添加
-        for(int i=0;i<phones.size()-1;i++){
+        for(int i=0;i<phones.size();i++){
             list.add(new RecipientPayload.Builder()
                     .setMobile(phones.get(i).toString())
                     .addTempPara("msg",news)
@@ -87,7 +87,7 @@ public class SendMassage{
 //        list.add(recipientPayload2);
         RecipientPayload[] recipientPayloads = new RecipientPayload[list.size()];
         BatchSMSPayload smsPayload = BatchSMSPayload.newBuilder()
-                .setTempId(168984)
+                .setTempId(169113)
                 // .setSignId(1380)
                 .setRecipients(list.toArray(recipientPayloads))
                 .build();

@@ -3,6 +3,7 @@ package cn.ritac.cpwater.service;
 import java.util.List;
 import java.util.Map;
 
+import cn.ritac.cpwater.mybatis.model.DevicesEventRec;
 import cn.ritac.cpwater.web.dto.DevicesDto;
 import com.github.pagehelper.PageInfo;
 import cn.ritac.cpwater.mybatis.model.Devices;
@@ -34,9 +35,13 @@ public interface DevicesService extends BaseService<Devices, Integer> {
 
 	public List<Devices> findDeviceOfRole(Integer groupId, Integer roleId);
 
-	public List<ProporVO> deviceProporList();
+	public List<ProporVO> deviceProporList(String phone);
 
-	public List<ProporVO> eventProporList();
+	public List<ProporVO> eventProporList(String phone);
+
+	public List<EventVO> findEventListCut(String phone);
+
+	public List<EventVO> findNewEventList(Integer length);
 
 	PageInfo<EventVO> findEventList(EventDto eventDto);
 
@@ -54,7 +59,7 @@ public interface DevicesService extends BaseService<Devices, Integer> {
 
 	public List<Devices> findAllNotInGroup();
 
-	public List<EventVO> get_eventList(Integer id, String eventName, String devNum);
+	public PageInfo<EventVO> get_eventList(Integer id,Integer pageIndex,Integer pageSize);
 
 	public List<AiDiDoutVO> get_eventTypeOfgroup();
 
@@ -68,7 +73,7 @@ public interface DevicesService extends BaseService<Devices, Integer> {
 
 	public PageInfo<DevicesDto> findDeviceByUser(int pageIndex, int pageSize, String telePhone);
 
-	public List<Devices> getDevicesNoPage();
+	public List<Devices> getDevicesNoPage(String phone);
 
 	public void updateHoursAndLenthOfTime();
 	

@@ -218,20 +218,23 @@
 			INNER JOIN (
 			 SELECT COUNT(1) num FROM cpwater_devices
 			) s on 1=1
+			INNER JOIN cpwater_device_user cdu
+			where cdu.device_num=dev.device_num
+			and cdu.user_phone="15938815027"
 			GROUP BY dev.online
 			UNION
-			SELECT 
+			SELECT
 				k.name
 				,COUNT(1) value
-				,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per 
+				,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per
 			FROM(
 					SELECT
 							t.device_id,
 							'告警' name
 					FROM cpwater_devices_event_rec t
 					INNER JOIN cpwater_devices d on d.id = t.device_id
-					WHERE t.create_time 
-					BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) 
+					WHERE t.create_time
+					BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME)
 					AND NOW()
 					GROUP BY t.device_id
 			)k
@@ -241,61 +244,65 @@
 	</select>
 	
 	<select id="eventProporList" resultType="cn.ritac.cpwater.web.dto.convert.ProporVO">
-		SELECT 
-			 k.name
-			,COUNT(1) value
-			,TRUNCATE(ROUND(COUNT(1) /s.num,3)*100,2) per
-		FROM(
-			SELECT
-				 evn.create_time
-				,evn.device_id
-				,evn.event_info
-				,p.param_name
-				,CASE p.param_name WHEN 0 THEN '告警事件' ELSE(
-					CASE p.param_name WHEN 1 THEN '警告事件' ELSE(
-					CASE p.param_name WHEN 2 THEN '提醒事件' ELSE '' END
-					)END
-				)END name
-			FROM cpwater_params p
-			INNER JOIN cpwater_devices_event_rec evn on p.param_key = evn.event_info
-			WHERE p.param_col = 'eventType'
-			  AND evn.create_time
-				BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) 
-				AND NOW()
-			GROUP BY evn.event_info ,evn.device_id
-		) k
-		INNER JOIN (SELECT COUNT(1) num FROM cpwater_devices_event_rec
-			WHERE create_time
-			BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) AND NOW()
-		) s on 1=1
-		GROUP BY k.param_name
+		select
+		eve.event_content name,
+		count(*) value,
+		(SELECT COUNT(1) num FROM cpwater_devices_event_rec  WHERE create_time
+		BETWEEN CAST(CAST(SYSDATE()AS DATE)AS DATETIME) AND NOW()) allNum
+		from cpwater_devices_event_rec eve
+		<if test="phone != null and phone.trim() != ''">
+			LEFT JOIN cpwater_device_user cdu
+			on cdu.device_num=eve.device_num
+			where cdu.user_phone= #{phone}
+		</if>
+		GROUP BY eve.event_content
 	</select>
 	
 	<select id="evenList" resultType="cn.ritac.cpwater.web.dto.convert.EventVO">
-		SELECT k.* FROM (
-			SELECT
-			     der.id
-				,d.device_num
-				,p.param_value event_name
-				,p.param_descript event_descript
-				,der.create_time
-			FROM cpwater_params p
-			INNER JOIN cpwater_devices_event_rec der on der.event_info = p.param_key
-			INNER JOIN cpwater_devices d on d.id = der.device_id
-			WHERE param_col= 'eventType' AND  <![CDATA[ param_key < 9 ]]>
-			UNION
-			SELECT
-			      der.id
-				,d.device_num
-				,p.param_value event_name
-				,p.param_descript event_descript
-				,der.create_time
-			FROM cpwater_params p
-			INNER JOIN cpwater_devices_event_rec der on der.event_info = p.param_key AND der.event_content = p.param_level
-			INNER JOIN cpwater_devices d on d.id = der.device_id
-			WHERE p.param_col= 'eventType' AND p.param_key = 9
-			) k ORDER BY k.create_time DESC
+		select eve.id,
+		eve.device_id deviceId,
+		eve.device_num deviceNum,
+		eve.event_info eventInfo,
+		eve.event_content eventDescript,
+		eve.create_time createTime
+		from cpwater_devices_event_rec eve
+		group by eve.create_time desc
 	</select>
+
+	<select id="evenListCut" resultType="cn.ritac.cpwater.web.dto.convert.EventVO">
+		select eve.id,
+		eve.device_id deviceId,
+		eve.device_num deviceNum,
+		eve.event_info eventInfo,
+		eve.event_content eventDescript,
+		eve.create_time createTime
+		from cpwater_devices_event_rec eve
+		<if test="phone != null and phone.trim() != ''">
+			LEFT JOIN cpwater_device_user cdu
+			on cdu.device_num=eve.device_num
+			where cdu.user_phone= #{phone}
+		</if>
+		group by eve.create_time desc
+		LIMIT 20
+	</select>
+		<!-- 获取新上报事件返回首页 -->
+	<select id="evenNewListCut" resultType="cn.ritac.cpwater.web.dto.convert.EventVO">
+		select eve.id,
+		eve.device_id deviceId,
+		eve.device_num deviceNum,
+		eve.event_info eventInfo,
+		eve.event_content eventDescript,
+		eve.create_time createTime
+		from cpwater_devices_event_rec eve
+		<if test="length != null and length.trim() != '' || length != null and length.trim() != ''">
+			LEFT JOIN cpwater_device_user cdu
+			on cdu.device_num=eve.device_num
+			where cdu.user_phone= #{phone}
+		</if>
+		group by eve.create_time desc
+		LIMIT 20
+	</select>
+
 	
 	<select id="findDeviceByCondition" resultMap="DevicesDto">
 		SELECT
@@ -307,7 +314,7 @@
 
 	<select id="findDeviceByUser" resultMap="BaseResultMap">
 		SELECT
-			dev.*
+			dev.*,cdu.user_phone
 			FROM cpwater_devices dev
 			LEFT JOIN cpwater_device_user cdu ON dev.device_num = cdu.device_num
 			where 1=1
@@ -316,10 +323,12 @@
 	<select id="getDevicesNoPage" resultMap="BaseResultMap">
 		SELECT
 			dev.*
-			,a.img_url img
 			FROM cpwater_devices dev
-			LEFT JOIN cpwater_group_device gd ON dev.id = gd.device_id
-			LEFT JOIN cpwater_assets a ON dev.device_num = a.device_num
+			<if test="phone != null and phone.trim() != ''">
+			LEFT JOIN cpwater_device_user cdu
+			on cdu.device_num=dev.device_num
+			where cdu.user_phone= #{phone}
+			</if>
 	</select>
 	
 </mapper>

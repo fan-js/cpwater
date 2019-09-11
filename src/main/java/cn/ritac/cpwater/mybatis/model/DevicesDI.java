@@ -27,20 +27,25 @@ public class DevicesDI implements Serializable {
     @Column(name = "wastegate")
     private Boolean wastegate;
     /**
-     * 水位高
+     * 水位A
      */
     @Column(name = "water_levela")
-    private Boolean waterlevela;
+    private Boolean  waterlevela;
     /**
-     * 水位中
+     * 水位B
      */
     @Column(name = "water_levelb")
     private Boolean waterLevelb;
     /**
-     * 水位低
+     * 水位C
      */
     @Column(name = "water_levelc")
     private Boolean waterLevelc;
+    /**
+     * 水位D
+     */
+    @Column(name = "water_leveld")
+    private Boolean waterLeveld;
 
     public Boolean getWaterPump() {
         return waterPump;
@@ -80,6 +85,14 @@ public class DevicesDI implements Serializable {
 
     public void setWaterLevelc(Boolean waterLevelc) {
         this.waterLevelc = waterLevelc;
+    }
+
+    public Boolean getWaterLeveld() {
+        return waterLeveld;
+    }
+
+    public void setWaterLeveld(Boolean waterLeveld) {
+        this.waterLeveld = waterLeveld;
     }
 
     /**

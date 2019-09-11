@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 import cn.ritac.cpwater.comm.mqtt.message.*;
+import cn.ritac.cpwater.mybatis.mapper.*;
 import cn.ritac.cpwater.mybatis.model.*;
 import cn.ritac.cpwater.sendMassage.SendMassage;
 import cn.ritac.cpwater.service.*;
 import cn.ritac.cpwater.web.dto.convert.*;
+import cn.ritac.cpwater.web.dto.export.DeviceCountVo;
+import com.github.pagehelper.PageInfo;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
@@ -34,23 +37,6 @@ import cn.ritac.cpwater.comm.mqtt.newdev.MsgDataKernelInfo;
 import cn.ritac.cpwater.comm.mqtt.newdev.MsgDataNewlogin;
 import cn.ritac.cpwater.comm.mqtt.newdev.MsgDataNumberOfData;
 import cn.ritac.cpwater.comm.mqtt.newdev.MsgDataUpOpt;
-import cn.ritac.cpwater.mybatis.mapper.BakserveMapper;
-import cn.ritac.cpwater.mybatis.mapper.DataupoptMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesAIMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesAIRecMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesDIMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesDIRecMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesDoMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesDoRecMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesEventRecMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesRegMapper;
-import cn.ritac.cpwater.mybatis.mapper.DevicesRegRecMapper;
-import cn.ritac.cpwater.mybatis.mapper.IOTCardMapper;
-import cn.ritac.cpwater.mybatis.mapper.NumberOfDataMapper;
-import cn.ritac.cpwater.mybatis.mapper.RegCameraMapper;
-import cn.ritac.cpwater.mybatis.mapper.WorkingHourMapper;
-import cn.ritac.cpwater.mybatis.mapper.WorkingTimeMapper;
 import cn.ritac.cpwater.mybatis.model.Bakserve;
 import cn.ritac.cpwater.mybatis.model.Dataupopt;
 import cn.ritac.cpwater.mybatis.model.Devices;
@@ -65,7 +51,6 @@ import cn.ritac.cpwater.mybatis.model.DevicesReg;
 import cn.ritac.cpwater.mybatis.model.DevicesRegRec;
 import cn.ritac.cpwater.mybatis.model.IOTCard;
 import cn.ritac.cpwater.mybatis.model.NumberOfData;
-import cn.ritac.cpwater.mybatis.model.RegCamera;
 import cn.ritac.cpwater.mybatis.model.WorkingHour;
 import cn.ritac.cpwater.mybatis.model.WorkingTime;
 import cn.ritac.cpwater.service.DevicesService;
@@ -82,6 +67,9 @@ public class MQTTServiceImpl implements MQTTService {
 
 	@Autowired
 	private DevicesMapper devicesMapper;
+
+	@Autowired
+	private UsersService usersService;
 
 	@Autowired
 	private ServerMQTT serverMQTT;
@@ -126,13 +114,13 @@ public class MQTTServiceImpl implements MQTTService {
 	private RegCameraMapper regCameraMapper;
 
 	@Autowired
+	private ExportMapper exportMapper;
+
+	@Autowired
 	private IOTCardMapper iotCardMapper;
 
 	@Autowired
 	private DevicesService devicesService;
-
-	@Autowired
-	private UsersService usersService;
 
 	@Autowired
 	private DeviceAndUserService deviceAndUserService;
@@ -777,7 +765,7 @@ public class MQTTServiceImpl implements MQTTService {
 						devicesMapper.updateByPrimaryKey(devicesInfo);
 					}
 
-					/* 模拟量输入 */
+					/* AI模拟量输入 */
 					if (data.getMsgData().getAin() != null) {
 						DevicesAI devicesAI = new DevicesAI();
 						devicesAI.setDeviceId(deviceId);// 设备表主键
@@ -785,8 +773,6 @@ public class MQTTServiceImpl implements MQTTService {
 						if (!StringUtils.isEmpty(isdevicesAI)) {
 							devicesAI = isdevicesAI;
 						}
-						// 删除原有设备ai数据
-						// devicesAIMapper.delete(devicesAI);
 
 						if (!StringUtils.isEmpty(getAiDiValue(1, data.getMsgData().getAin())))
 							devicesAI.setVoltage(
@@ -805,6 +791,9 @@ public class MQTTServiceImpl implements MQTTService {
 						if (!StringUtils.isEmpty(getAiDiValue(5, data.getMsgData().getAin())))
 							devicesAI.setPress(
 									Float.parseFloat(getAiDiValue(5, data.getMsgData().getAin()).toString()));// 压力
+						if (!StringUtils.isEmpty(getAiDiValue(6, data.getMsgData().getAin())))
+							devicesAI.setWater(
+									getAiDiValue(6, data.getMsgData().getAin()).toString());// 水位
 
 						devicesAI.setUpdateTime(updateTime);
 						/* 插入设备最新ai数据 */
@@ -834,12 +823,15 @@ public class MQTTServiceImpl implements MQTTService {
 						if (!StringUtils.isEmpty(getAiDiValue(5, data.getMsgData().getAin())))
 							dar.setPress(
 									Float.parseFloat(getAiDiValue(5, data.getMsgData().getAin()).toString()));// 压力
+						if (!StringUtils.isEmpty(getAiDiValue(6, data.getMsgData().getAin())))
+							dar.setWater(
+									getAiDiValue(6, data.getMsgData().getAin()).toString());// 水位
 						dar.setUpdateTime(updateTime);
 						/* 插入设备ai数据记录表 */
 						devicesAIRecMapper.insert(dar);
 					}
 
-					/* 开关量输入 */
+					/* DI开关量输入 */
 					if (data.getMsgData().getDin() != null) {
 						DevicesDI devicesDI = new DevicesDI();
 						devicesDI.setDeviceId(deviceId);
@@ -851,15 +843,19 @@ public class MQTTServiceImpl implements MQTTService {
 						// 删除设备原有di记录
 						// devicesDIMapper.delete(devicesDI);
 						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDin())))
-							devicesDI.setWaterPump(((boolean) (getDoBooleanValue(1, data.getMsgData().getDin()))));// 水泵
+							devicesDI.setWaterPump((boolean) (getDoBooleanValue(1, data.getMsgData().getDin())));// 水泵
 						if (!StringUtils.isEmpty(getDoBooleanValue(2, data.getMsgData().getDin())))
-							devicesDI.setWastegate(((boolean) (getDoBooleanValue(2, data.getMsgData().getDin()))));// 泄压阀
-						if (!StringUtils.isEmpty(getDoBooleanValue(3, data.getMsgData().getDin())))
-							devicesDI.setWaterlevela(((boolean) (getDoBooleanValue(3, data.getMsgData().getDin()))));// 水位高
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDin())))
-							devicesDI.setWaterLevelb(((boolean) (getDoBooleanValue(4, data.getMsgData().getDin()))));// 水位中
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDin())))
-							devicesDI.setWaterLevelc(((boolean) (getDoBooleanValue(5, data.getMsgData().getDin()))));// 水位低
+							devicesDI.setWastegate((boolean) (getDoBooleanValue(2, data.getMsgData().getDin())));// 泄压阀
+
+						if (!StringUtils.isEmpty(getDoBooleanValue(3,data.getMsgData().getDin())))
+							devicesDI.setWaterlevela((boolean) (getDoBooleanValue(3,data.getMsgData().getDin())));// 水位A/使能/未使能
+						if (!StringUtils.isEmpty(getDoBooleanValue(4,data.getMsgData().getDin())))
+							devicesDI.setWaterLevelb((boolean)(getDoBooleanValue(4,data.getMsgData().getDin())));// 水位B/使能/未使能
+
+						if (!StringUtils.isEmpty(getDoBooleanValue(5,data.getMsgData().getDin())))
+							devicesDI.setWaterLevelc((boolean)(getDoBooleanValue(5,data.getMsgData().getDin())));// 水位C/使能/未使能
+						if (!StringUtils.isEmpty(getDoBooleanValue(6,data.getMsgData().getDin())))
+							devicesDI.setWaterLeveld((boolean)(getDoBooleanValue(6,data.getMsgData().getDin())));// 水位D/使能/未使能
 						devicesDI.setUpdateTime(updateTime);
 						/* 插入最新di状态 */
 						if (!StringUtils.isEmpty(isdevicesDI)) {
@@ -873,15 +869,19 @@ public class MQTTServiceImpl implements MQTTService {
 						ddr.setDeviceId(deviceId);
 
 						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDin())))
-							ddr.setWaterPump(((boolean) (getDoBooleanValue(1, data.getMsgData().getDin()))));// 水泵
+							ddr.setWaterPump((boolean) (getDoBooleanValue(1, data.getMsgData().getDin())));// 水泵
 						if (!StringUtils.isEmpty(getDoBooleanValue(2, data.getMsgData().getDin())))
-							ddr.setWastegate(((boolean) (getDoBooleanValue(2, data.getMsgData().getDin()))));// 泄压阀
-						if (!StringUtils.isEmpty(getDoBooleanValue(3, data.getMsgData().getDin())))
-							ddr.setWaterlevela(((boolean) (getDoBooleanValue(3, data.getMsgData().getDin()))));// 水位高
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDin())))
-							ddr.setWaterLevelb(((boolean) (getDoBooleanValue(4, data.getMsgData().getDin()))));// 水位中
-						if (!StringUtils.isEmpty(getDoBooleanValue(4, data.getMsgData().getDin())))
-							ddr.setWaterLevelc(((boolean) (getDoBooleanValue(5, data.getMsgData().getDin()))));// 水位低
+							ddr.setWastegate((boolean) (getDoBooleanValue(2, data.getMsgData().getDin())));// 泄压阀
+
+						if (!StringUtils.isEmpty(getDoBooleanValue(3,data.getMsgData().getDin())))
+							ddr.setWaterlevela((boolean) (getDoBooleanValue(3,data.getMsgData().getDin())));// 水位A/使能/未使能
+						if (!StringUtils.isEmpty(getDoBooleanValue(4,data.getMsgData().getDin())))
+							ddr.setWaterLevelb((boolean)(getDoBooleanValue(4,data.getMsgData().getDin())));// 水位B/使能/未使能
+
+						if (!StringUtils.isEmpty(getDoBooleanValue(5,data.getMsgData().getDin())))
+							ddr.setWaterLevelc((boolean)(getDoBooleanValue(5,data.getMsgData().getDin())));// 水位C/使能/未使能
+						if (!StringUtils.isEmpty(getDoBooleanValue(6,data.getMsgData().getDin())))
+							ddr.setWaterLeveld((boolean)(getDoBooleanValue(6,data.getMsgData().getDin())));// 水位D/使能/未使能
 
 						ddr.setUpdateTime(updateTime);
 						/* 插入设备di状态记录表 */
@@ -898,8 +898,12 @@ public class MQTTServiceImpl implements MQTTService {
 						}
 						// 删除原有设备do信息
 						// devicesDoMapper.delete(devicesDo);
-						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDout())))
-							devicesDo.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 水泵状态
+						if (!StringUtils.isEmpty(getDoBooleanValue(1,data.getMsgData().getDout())))
+							devicesDo.setPump((boolean)(getDoBooleanValue(1,data.getMsgData().getDout())));//水泵
+						if (!StringUtils.isEmpty(getDoBooleanValue(2,data.getMsgData().getDout())))
+							devicesDo.setWastegate((boolean)(getDoBooleanValue(2,data.getMsgData().getDout())));//泄压阀
+						if (!StringUtils.isEmpty(getDoBooleanValue(3,data.getMsgData().getDout())))
+							devicesDo.setReset((boolean)(getDoBooleanValue(3,data.getMsgData().getDout())));//电能表复位
 
 						devicesDo.setUpdateTime(updateTime);
 						/* 插入最新do状态 */
@@ -911,8 +915,12 @@ public class MQTTServiceImpl implements MQTTService {
 						// 记录表
 						DevicesDoRec dor = new DevicesDoRec();
 						dor.setDeviceId(deviceId);
-						if (!StringUtils.isEmpty(getDoBooleanValue(1, data.getMsgData().getDout())))
-							dor.setElecLock((boolean) getDoBooleanValue(1, data.getMsgData().getDout()));// 水泵状态
+						if (!StringUtils.isEmpty(getDoBooleanValue(1,data.getMsgData().getDout())))
+							dor.setPump((boolean)(getDoBooleanValue(1,data.getMsgData().getDout())));//水泵
+						if (!StringUtils.isEmpty(getDoBooleanValue(2,data.getMsgData().getDout())))
+							dor.setWastegate((boolean)(getDoBooleanValue(2,data.getMsgData().getDout())));//泄压阀
+						if (!StringUtils.isEmpty(getDoBooleanValue(3,data.getMsgData().getDout())))
+							dor.setReset((boolean)(getDoBooleanValue(3,data.getMsgData().getDout())));//电能表复位
 
 						dor.setUpdateTime(updateTime);
 						/* 插入do状态记录表 */
@@ -922,8 +930,8 @@ public class MQTTServiceImpl implements MQTTService {
 				}
 
 			} catch (Exception ex) {
-				logger.error("基本数据上传修改出错:" + ex.getMessage());
-			}
+			logger.error("基本数据上传修改出错:" + ex.getMessage());
+		}
 		} else {
 			logger.error("得到设备端上传密钥错误或者该设备还没注册:" + data.getDeviceID() + "key:" + data.getDeviceKey());
 		}
@@ -1040,6 +1048,7 @@ public class MQTTServiceImpl implements MQTTService {
 				devicesEventRec.setEventInfo(String.valueOf(eventItem.getEventSn()));
 				devicesEventRec.setEventContent(eventItem.getEventContent());
 				devicesEventRec.setCreateTime(new Date());
+				devicesEventRec.setDeviceNum(devices.getDeviceNum());
 				devicesEventRecMapper.insert(devicesEventRec);
 				// 根据事件内容,更新设备表 电源状态/连接状态 sn--1; Content{mainPower-主电源;UPS-变为UPS
 				// ;mobile-移动网络;LAN-LAN口通信 }
@@ -1047,9 +1056,17 @@ public class MQTTServiceImpl implements MQTTService {
 				dau.setDeviceNum(Integer.parseInt(devicesInfo.getDeviceNum()));
 				DeviceAndUser deviceAndUser=deviceAndUserService.find(dau);
 				String phone=deviceAndUser.getUserPhone();
-				sm.sendNoticeSMS(phone,eventData.getDeviceID()+"号设备，在"+eventItem.getEventTime()+"出现"+eventItem.getEventContent()+"异常");
-
-
+				//通知用户
+				sm.sendNoticeSMS(phone,eventData.getDeviceID()+"号设备，在"+eventItem.getEventTime()+"出现"+eventItem.getEventContent());
+				//通知厂商
+				Users users=new Users();
+				users.setType("1");
+				List<Users> listPhone=usersService.findList(users);
+				List list=new ArrayList();
+				for(Users users1 : listPhone){
+						list.add(users1.getTelephone());
+				}
+				sm.sendBatchTemplateSMS(list,eventData.getDeviceID()+"号设备，在"+eventItem.getEventTime()+"出现"+eventItem.getEventContent());
 			}
 			// 事件获取成功，回传本次事件编号给设备，避免设备频繁发送重复事件
 			MQTTDeviceEventResult eventResult = new MQTTDeviceEventResult();
@@ -1114,8 +1131,6 @@ public class MQTTServiceImpl implements MQTTService {
 
 					reg.setDeviceId(deviceId);
 					DevicesReg isReg = devicesRegMapper.selectOne(reg);
-					// 删除原有reg配置信息
-					// devicesRegMapper.delete(reg);
 					if (!StringUtils.isEmpty(isReg)) {
 						reg = isReg;
 					}
@@ -1126,143 +1141,58 @@ public class MQTTServiceImpl implements MQTTService {
 					Date time = mqttDeviceConfigUp.getTime() == null ? new Date()
 							: new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(mqttDeviceConfigUp.getTime());
 					reg.setUpdateTime(time);
-					String tmp_str = "";
-					tmp_str = getRegValue(1, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setDoorAlarmDelaytime(tmp_str);// 开关门告警延迟时间
-					tmp_str = getRegValue(2, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setLightingUpperlimit(tmp_str);// 照明灯控制上限
-					tmp_str = getRegValue(3, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setLightingLowerlimit(tmp_str);// 照明灯控制下限
-					tmp_str = getRegValue(4, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setTemperatureUppperlimit(tmp_str);// 温度控制上限
-					tmp_str = getRegValue(5, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setTemperatureLowerlimit(tmp_str);// 温度控制下限
-					tmp_str = getRegValue(6, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setVoltageUpperlimit(tmp_str);// 电压上限
-					tmp_str = getRegValue(7, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setVoltageLowerlimit(tmp_str);// 电压下限
-					tmp_str = getRegValue(8, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setCurrentUpperlimit(tmp_str);// 电流上限
-					tmp_str = getRegValue(9, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setCurrentLeakagelimit(tmp_str);// 漏电流上限
-					tmp_str = getRegValue(129, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsWarningvoltageupper(tmp_str);// UPS 预警电压上限
-					tmp_str = getRegValue(130, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsWarningvoltagelower(tmp_str);// UPS 预警电压下限
-					tmp_str = getRegValue(131, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsWarningcapacityupper(tmp_str);// UPS 预警容量上限
-					tmp_str = getRegValue(132, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsWarningcapacitylower(tmp_str);// UPS 预警容量下限
-					tmp_str = getRegValue(133, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsChargeupperlimit(tmp_str);// UPS 充电电流上限告警值
-					tmp_str = getRegValue(134, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsChargelowerlimit(tmp_str);// UPS 充电电流上限告警值
-					tmp_str = getRegValue(135, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsDischargeupperlimit(tmp_str);// UPS 放电电流上限告警值
-					tmp_str = getRegValue(136, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsDischargelowerlimit(tmp_str);// UPS 放电电流下限告警值
-					tmp_str = getRegValue(137, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsTemperatureupperlimit(tmp_str);// UPS 温度告警上限
-					tmp_str = getRegValue(138, data).toString();
-					if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-						reg.setUpsTemperaturelowerlimit(tmp_str);// UPS 温度告警下限
+					reg.setWorkMode(Integer.parseInt(data[0].getVal().toString()));
+					reg.setStartTimea(String.valueOf(data[1].getVal().toString()));
+					reg.setEndTimea(String.valueOf(data[2].getVal().toString()));
+					reg.setStatea(String.valueOf(data[3].getVal().toString()));
+
+					reg.setStartTimeb(String.valueOf(data[4].getVal().toString()));
+					reg.setEndTimeb(String.valueOf(data[5].getVal().toString()));
+					reg.setStateb(String.valueOf(data[6].getVal().toString()));
+
+					reg.setStartTimec(String.valueOf(data[7].getVal().toString()));
+					reg.setEndTimec(String.valueOf(data[8].getVal().toString()));
+					reg.setStatec(String.valueOf(data[9].getVal().toString()));
+
+					reg.setStartTimed(String.valueOf(data[10].getVal().toString()));
+					reg.setEndTimed(String.valueOf(data[11].getVal().toString()));
+					reg.setStated(String.valueOf(data[12].getVal().toString()));
+
+					reg.setWinda(String.valueOf(data[13].getVal().toString()));
+					reg.setWindb(String.valueOf(data[14].getVal().toString()));
+					reg.setPress(Float.parseFloat(data[15].getVal().toString()));
+					reg.setWinda(String.valueOf(data[16].getVal().toString()));
+					reg.setWater(String.valueOf(data[17].getVal().toString()));
 					if (!StringUtils.isEmpty(isReg)) {
 						devicesRegMapper.updateByPrimaryKey(reg);
 					} else {
 						devicesRegMapper.insert(reg);
 					}
-					tmp_str = getRegValue(33, data).toString();
-					if (!StringUtils.isEmpty(tmp_str) && !tmp_str.equals("-1")) {
-						RegCamera rc1 = new RegCamera();
-						rc1.setDeviceId(deviceId);
-						rc1.setSn(tmp_str);
-						RegCamera isRc1 = regCameraMapper.selectOne(rc1);
-						if (!StringUtils.isEmpty(isRc1)) {
-							rc1 = isRc1;
-						}
-						// regCameraMapper.delete(rc1);
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setSn(tmp_str);// 相机1 SN
-						tmp_str = getRegValue(34, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setModel(tmp_str);// 相机1 MODEL
-						tmp_str = getRegValue(35, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setMac(tmp_str);// 相机1 MAC
-						tmp_str = getRegValue(36, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setIp(tmp_str);// 相机1 IP
-						tmp_str = getRegValue(37, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setState(tmp_str);// 相机1 状态
-						tmp_str = getRegValue(43, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setAccount(tmp_str);
-						tmp_str = getRegValue(44, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc1.setPassword(tmp_str);
-						if (!StringUtils.isEmpty(isRc1)) {
-							regCameraMapper.updateByPrimaryKey(rc1);
-						} else {
-							regCameraMapper.insert(rc1);
-						}
-					}
-					tmp_str = getRegValue(38, data).toString();
-					if (!StringUtils.isEmpty(tmp_str) && !tmp_str.equals("-1")) {
-						RegCamera rc2 = new RegCamera();
-						rc2.setDeviceId(deviceId);
-						rc2.setSn(tmp_str);
-						RegCamera isRc2 = regCameraMapper.selectOne(rc2);
-						if (!StringUtils.isEmpty(isRc2)) {
-							rc2 = isRc2;
-						}
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setSn(tmp_str);// 相机2 SN
-						tmp_str = getRegValue(39, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setModel(tmp_str);// 相机2 MODEL
-						tmp_str = getRegValue(40, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setMac(tmp_str);// 相机2 MAC
-						tmp_str = getRegValue(41, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setIp(tmp_str);// 相机2 IP
-						tmp_str = getRegValue(42, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setState(tmp_str);// 相机2状态
-						tmp_str = getRegValue(45, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setAccount(tmp_str);
-						tmp_str = getRegValue(46, data).toString();
-						if (!tmp_str.equals("") && !tmp_str.equals("-1"))
-							rc2.setPassword(tmp_str);
-						if (!StringUtils.isEmpty(isRc2)) {
-							regCameraMapper.updateByPrimaryKey(rc2);
-						} else {
-							regCameraMapper.insert(rc2);
-						}
-					}
 					// 插入设备设备配置信息记录表
 					DevicesRegRec drr = new DevicesRegRec();
-					BeanUtils.copyProperties(reg, drr);
+					drr.setUpdateTime(time);
+					drr.setWorkMode(Integer.parseInt(data[0].getVal().toString()));
+					drr.setStartTimea(String.valueOf(data[1].getVal().toString()));
+					drr.setEndTimea(String.valueOf(data[2].getVal().toString()));
+					drr.setStatea(String.valueOf(data[3].getVal().toString()));
+
+					drr.setStartTimeb(String.valueOf(data[4].getVal().toString()));
+					drr.setEndTimeb(String.valueOf(data[5].getVal().toString()));
+					drr.setStateb(String.valueOf(data[6].getVal().toString()));
+
+					drr.setStartTimec(String.valueOf(data[7].getVal().toString()));
+					drr.setEndTimec(String.valueOf(data[8].getVal().toString()));
+					drr.setStatec(String.valueOf(data[9].getVal().toString()));
+
+					drr.setStartTimed(String.valueOf(data[10].getVal().toString()));
+					drr.setEndTimed(String.valueOf(data[11].getVal().toString()));
+					drr.setStated(String.valueOf(data[12].getVal().toString()));
+
+					drr.setWinda(String.valueOf(data[13].getVal().toString()));
+					drr.setWindb(String.valueOf(data[14].getVal().toString()));
+					drr.setPress(Float.parseFloat(data[15].getVal().toString()));
+					drr.setWinda(String.valueOf(data[16].getVal().toString()));
+					drr.setWater(String.valueOf(data[17].getVal().toString()));
 					drr.setDeviceId(deviceId);
 					drr.setUpdateTime(time);
 					devicesRegRecMapper.insert(drr);
@@ -1284,7 +1214,7 @@ public class MQTTServiceImpl implements MQTTService {
 	@Autowired
 	ApplicationContext applicationContext;
 
-	public String SendCallback(Object dNum) {
+	public void SendCallback(Object dNum) {
 		String deviceNum = dNum.toString();
 		Devices devSearch = new Devices();
 		devSearch.setDeviceNum(deviceNum);
@@ -1304,27 +1234,65 @@ public class MQTTServiceImpl implements MQTTService {
 				sseServicesImp.sendMsg(key, value);
 			});
 		}
-		// RITAC/IN/CPWATER/Page/#
-		return "";
+
+	}
+
+	public void GetCharts(Integer id) {
+		String deviceNum = id.toString();
+		Devices devSearch = new Devices();
+		devSearch.setDeviceNum(deviceNum);
+		devSearch = devicesMapper.selectOne(devSearch);
+		if (!StringUtils.isEmpty(devSearch)) {
+			id = devSearch.getId();
+			Map<String, Object> resMap = new HashMap<String, Object>();
+			Map<String, Object> chartsMap = devicesService.sendCharts(id);
+			resMap.put("charts", chartsMap.get("charts"));
+			resMap.forEach((key, value) -> {
+				sseServicesImp.sendMsg(key, value);
+			});
+		}
+
+	}
+
+	public void sendEvent(int length) {
+
+
+			Map<String, Object> resMap = new HashMap<String, Object>();
+			//有事件上报时返回最新事件
+			List<EventVO> eventList = devicesService.findNewEventList(length);
+			resMap.put("eventList", eventList);
+			resMap.forEach((key, value) -> {
+				sseServicesImp.sendMsg(key, value);
+			});
 	}
 
 	/**
 	 * 事件更新推送，封装json推送
 	 */
-	public void sendEvent() {
+	public void SendLogin(String phone) {
 		Map<String, Object> resMap = new HashMap<String, Object>();
-		List<EventVO> eventList = devicesEventRecMapper.get_eventList(0, null, null);
-		List<AiDiDoutVO> eventTypeOfgroup = devicesEventRecMapper.get_eventTypeOfgroup();
-		List<AiDiDoutVO> eventCountOfGroup = devicesEventRecMapper.get_eventCountOfGroup();
-		List<AiDiDoutVO> eventTypeCount = devicesEventRecMapper.get_eventCount();
+		//用户类型统计
+		List<ProporVO> proporCountList=usersService.userProporList();
+		//设备总在线离线故障数量
+		List<DeviceCountVo> deviceCountList = exportMapper.export_deviceCount(phone);
+		//首页展示用户下所有事件前20条
+		List<EventVO> eventList = devicesService.findEventListCut(phone);
+		//事件类型统计
+		List<ProporVO> eventProporList = devicesService.eventProporList(phone);
+		resMap.put("proporCountList", proporCountList);
+		resMap.put("deviceCountList", deviceCountList);
 		resMap.put("eventList", eventList);
-		resMap.put("eventTypeOfgroup", eventTypeOfgroup);
-		resMap.put("eventCountOfGroup", eventCountOfGroup);
-		resMap.put("eventTypeCount", eventTypeCount);
+		resMap.put("eventProporList", eventProporList);
 		resMap.forEach((key, value) -> {
 			sseServicesImp.sendMsg(key, value);
 		});
 	}
+
+
+
+
+
+
 
 	/**
 	 * 电网数据推送，封装json

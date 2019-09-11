@@ -18,7 +18,7 @@ public interface ExportMapper extends Mapper<GroupWringVo> {
 
 	public List<GroupWringVo> export_groupWing(@Param("startTime") Date startTime, @Param("endTime")Date endTime);
 
-	public List<DeviceCountVo> export_deviceCount();
+	public List<DeviceCountVo> export_deviceCount(@Param("phone") String phone);
 
 	public List<DeviceGroupCountVo> export_deviceGroupCount(@Param("startTime") Date startTime, @Param("endTime")Date endTime);
 

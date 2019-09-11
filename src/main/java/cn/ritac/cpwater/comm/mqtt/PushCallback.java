@@ -115,7 +115,7 @@ public class PushCallback implements MqttCallbackExtended {
 				MQTTDeviceEventData smqttDeviceEventData = JSONObject.parseObject(content, MQTTDeviceEventData.class);
 				MQTTService.getEvent(smqttDeviceEventData);
 				// 推送
-				MQTTService.sendEvent();
+				MQTTService.sendEvent(smqttDeviceEventData.getMsgData().getEventInfo().length);
 				logger.info("事件上传流程结束");
 				break;
 			case 107:// 配置信息

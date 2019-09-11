@@ -45,6 +45,7 @@ public class SseController {
 		SseEmitter emitter = new SseEmitter(600000L);
 		// 验证新对象
 		sseServicesImp.register(emitter);
+
 		return emitter;
 	}
 

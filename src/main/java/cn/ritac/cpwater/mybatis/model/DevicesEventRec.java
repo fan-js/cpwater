@@ -10,6 +10,9 @@ public class DevicesEventRec implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SELECT LAST_INSERT_ID()")
     private Integer id;
 
+    @Column(name = "device_num")
+    private String deviceNum;
+
     @Column(name = "device_id")
     private Integer deviceId;
 
@@ -92,5 +95,13 @@ public class DevicesEventRec implements Serializable {
      */
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getDeviceNum() {
+        return deviceNum;
+    }
+
+    public void setDeviceNum(String deviceNum) {
+        this.deviceNum = deviceNum;
     }
 }

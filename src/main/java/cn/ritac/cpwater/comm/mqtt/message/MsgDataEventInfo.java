@@ -2,6 +2,7 @@ package cn.ritac.cpwater.comm.mqtt.message;
 
 public class MsgDataEventInfo {
 	private int eventSn;
+	private String deviceNum;
 	private String eventTime;
 	private String eventContent;
 
@@ -29,4 +30,11 @@ public class MsgDataEventInfo {
 		this.eventContent = eventContent;
 	}
 
+	public String getDeviceNum() {
+		return deviceNum;
+	}
+
+	public void setDeviceNum(String deviceNum) {
+		this.deviceNum = deviceNum;
+	}
 }

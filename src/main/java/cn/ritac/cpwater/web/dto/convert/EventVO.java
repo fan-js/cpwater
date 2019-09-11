@@ -4,6 +4,7 @@
  */
 package cn.ritac.cpwater.web.dto.convert;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -15,12 +16,31 @@ import java.util.Date;
  *<br><b>ClassName:</b> eventVO
  *<br><b>CreatTime:</b> 2019年4月27日下午1:56:34
  */
-public class EventVO {
+public class EventVO implements Serializable {
 	private int id;
-	private String device_num;
-	private String event_name;
-	private String event_descript;
-	private Date create_time;
+	private String deviceNum;
+	private String eventName;
+	private String eventDescript;
+	private Date createTime;
+	private String deviceId;
+	private String eventInfo;
+
+
+	public String getDeviceId() {
+		return deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	public String getEventInfo() {
+		return eventInfo;
+	}
+
+	public void setEventInfo(String eventInfo) {
+		this.eventInfo = eventInfo;
+	}
 
 	public int getId() {
 		return id;
@@ -30,36 +50,35 @@ public class EventVO {
 		this.id = id;
 	}
 
-	public String getDevice_num() {
-		return device_num;
+	public String getDeviceNum() {
+		return deviceNum;
 	}
 
-	public void setDevice_num(String device_num) {
-		this.device_num = device_num;
+	public void setDeviceNum(String deviceNum) {
+		this.deviceNum = deviceNum;
 	}
 
-	public String getEvent_name() {
-		return event_name;
+	public String getEventName() {
+		return eventName;
 	}
 
-	public void setEvent_name(String event_name) {
-		this.event_name = event_name;
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
 	}
 
-	public String getEvent_descript() {
-		return event_descript;
+	public String getEventDescript() {
+		return eventDescript;
 	}
 
-	public void setEvent_descript(String event_descript) {
-		this.event_descript = event_descript;
+	public void setEventDescript(String eventDescript) {
+		this.eventDescript = eventDescript;
 	}
 
-	public Date getCreate_time() {
-		return create_time;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
-	public void setCreate_time(Date create_time) {
-		this.create_time = create_time;
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
-
 }

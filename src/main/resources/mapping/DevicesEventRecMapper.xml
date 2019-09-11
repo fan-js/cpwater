@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.ritac.cpwater.mybatis.mapper.DevicesEventRecMapper">
-  <resultMap id="BaseResultMap" type="cn.ritac.cpwater.mybatis.model.DevicesEventRec">
-    <!--
-      WARNING - @mbg.generated
-    -->
+  <resultMap id="EventVO" type="cn.ritac.cpwater.web.dto.convert.EventVO">
     <id column="id" jdbcType="INTEGER" property="id" />
 	  <result column="device_num" jdbcType="VARCHAR" property="deviceNum" />
     <result column="device_id" jdbcType="INTEGER" property="deviceId" />
@@ -12,14 +9,27 @@
     <result column="event_content" jdbcType="VARCHAR" property="eventContent" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
-  
+
+
 	<select id="get_eventList" resultType="cn.ritac.cpwater.web.dto.convert.EventVO">
 		SELECT
+<<<<<<< Updated upstream
 		eve.*
 		FROM cpwater_devices_event_rec eve
 		WHERE 1=1
 		<if test=" id > 0 ">
 		  AND  dev.id = #{id}
+=======
+	eve.device_id deviceId,
+	eve.device_num deviceNum,
+	eve.event_content eventDescript,
+	eve.event_info eventInfo,
+	eve.create_time createTime
+	FROM cpwater_devices_event_rec eve
+		WHERE 1=1
+		<if test=" id > 0 ">
+		  AND  eve.device_id = #{id}
+>>>>>>> Stashed changes
 		</if>
 		GROUP BY eve.id
 		ORDER BY eve.create_time DESC

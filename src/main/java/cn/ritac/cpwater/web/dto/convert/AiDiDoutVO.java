@@ -4,6 +4,8 @@
  */
 package cn.ritac.cpwater.web.dto.convert;
 
+import java.io.Serializable;
+
 /**
  *<b>Description:</b><br>
  * @author admin
@@ -13,7 +15,7 @@ package cn.ritac.cpwater.web.dto.convert;
  *<br><b>ClassName:</b> AiDiDoutVO
  *<br><b>CreatTime:</b> 2019年4月27日下午3:24:54
  */
-public class AiDiDoutVO {
+public class AiDiDoutVO implements Serializable {
 	private String name;
 	private Object value;
 	private String descript;

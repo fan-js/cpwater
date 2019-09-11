@@ -56,6 +56,17 @@ public class DevicesAI implements Serializable {
      */
     private Float press;
 
+    private String water;
+
+
+    public String getWater() {
+        return water;
+    }
+
+    public void setWater(String water) {
+        this.water = water;
+    }
+
     public Float getElectricEnergy() {
         return electricEnergy;
     }
@@ -79,6 +90,7 @@ public class DevicesAI implements Serializable {
     public void setPress(Float press) {
         this.press = press;
     }
+
 
     /**
      * 漏电流

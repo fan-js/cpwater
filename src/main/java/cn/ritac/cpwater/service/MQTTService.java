@@ -61,12 +61,17 @@ public void updateResult(MQTTControlCommandPojo2 mqttControlCommandPojo2);
 
 	public String sendDeviceSelfConfigCommand(MQTTDeviceSelfConfig mqttDeviceSelfConfig);
 
-	public String SendCallback(Object obj);
+	public void SendCallback(Object obj);
 
-	public void sendEvent();
+	public void sendEvent(int length);
 
 	public void SendVoltnetPropor(String devNum, String devKey);
 	
 	public void OffLine(String deviceNum) ;
+
 	public void SendRegEvent() ;
+
+	public void GetCharts(Integer id) ;
+
+	public void SendLogin(String phone) ;
 }

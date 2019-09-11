@@ -80,7 +80,16 @@ public class DevicesAIRec implements Serializable {
     public void setPress(Float press) {
         this.press = press;
     }
+    private String water;
 
+
+    public String getWater() {
+        return water;
+    }
+
+    public void setWater(String water) {
+        this.water = water;
+    }
 
 
     /**

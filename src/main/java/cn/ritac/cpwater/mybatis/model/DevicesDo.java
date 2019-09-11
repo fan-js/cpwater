@@ -16,6 +16,47 @@ public class DevicesDo implements Serializable {
 	@Column(name = "update_time")
 	private Date updateTime;
 
+
+
+
+	/**
+	 *水泵
+	 * */
+	private Boolean pump;
+
+	/**
+	 *泄压阀
+	 * */
+	private Boolean wastegate;
+	/**
+	 *电能表复位
+	 * */
+	private Boolean  reset;
+
+	public Boolean getPump() {
+		return pump;
+	}
+
+	public void setPump(Boolean pump) {
+		this.pump = pump;
+	}
+
+	public Boolean getWastegate() {
+		return wastegate;
+	}
+
+	public void setWastegate(Boolean wastegate) {
+		this.wastegate = wastegate;
+	}
+
+	public Boolean getReset() {
+		return reset;
+	}
+
+	public void setReset(Boolean reset) {
+		this.reset = reset;
+	}
+
 	/**
 	 * 电磁锁状态
 	 */
