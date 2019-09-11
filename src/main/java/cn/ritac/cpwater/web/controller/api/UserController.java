@@ -6,18 +6,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import cn.jsms.api.SendSMSResult;
 import cn.jsms.api.ValidSMSResult;
 import cn.jsms.api.common.SMSClient;
+import cn.ritac.cpwater.mybatis.mapper.ExportMapper;
 import cn.ritac.cpwater.mybatis.model.Check;
+import cn.ritac.cpwater.mybatis.model.DeviceAndUser;
 import cn.ritac.cpwater.sendMassage.KetSecret;
 import cn.ritac.cpwater.sendMassage.SendMassage;
-import cn.ritac.cpwater.service.CheckService;
+import cn.ritac.cpwater.service.*;
 import cn.ritac.cpwater.web.dto.CheckDto;
+import cn.ritac.cpwater.web.dto.convert.EventVO;
+import cn.ritac.cpwater.web.dto.export.DeviceCountVo;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.modelmapper.ModelMapper;
@@ -38,8 +44,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.github.pagehelper.PageInfo;
 import cn.ritac.cpwater.mybatis.model.Roles;
 import cn.ritac.cpwater.mybatis.model.Users;
-import cn.ritac.cpwater.service.RolesService;
-import cn.ritac.cpwater.service.UsersService;
 import cn.ritac.cpwater.util.JWTUtil;
 import cn.ritac.cpwater.util.MD5CheckFile;
 import cn.ritac.cpwater.web.dto.LoginDto;
@@ -67,7 +71,19 @@ public class UserController extends BaseController {
 	private UsersService usersService;
 
 	@Autowired
+	private MQTTService MQTTService;
+
+	@Autowired
 	private CheckService checkService;
+
+	@Autowired
+	private ExportMapper exportMapper;
+
+	@Autowired
+	private DevicesService devicesService;
+
+	@Autowired
+	private DeviceAndUserService deviceAndUserService;
 
 	@Autowired
 	private HttpServletRequest httpServletRequest;
@@ -99,7 +115,6 @@ public class UserController extends BaseController {
 		searchUser.setTelephone(userName);
 		// searchUser.setUser_state(true);
 		Users userExtis = usersService.find(searchUser);
-		//userExtis.setPwd("");
 		if (StringUtils.isEmpty(userExtis)) {
 			return returnLogic.resultErrorJsonString(206, "账户、密码输入有误或账户不可用。");
 		}
@@ -108,6 +123,8 @@ public class UserController extends BaseController {
 			userExtis.setUser_token(tk);
 			usersService.update(userExtis);
 		}
+
+		userExtis.setPwd("");
 		String token = JWTUtil.sign(userName, pwd, -1);
 		return returnLogic.resultJsonLogin(200, "登录成功！", token,userExtis);
 
@@ -161,8 +178,11 @@ public class UserController extends BaseController {
 		return returnLogic.resultErrorJsonString(206, "手机号码不正确");
 	}
 
-
-	//控制天重置密码和修改密码次数
+		/**
+		 * 修改密码控制
+		 *
+		 * */
+			//控制天重置密码和修改密码次数
 		public CheckDto MonitoringAuthority(String phone, String type){
 		CheckDto checkDto=new CheckDto();
 			checkDto.setResult(false);
@@ -198,9 +218,9 @@ public class UserController extends BaseController {
 		/*-------------登录验证----<Begin>-------------*/
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
 		/*-------------登录验证----<End>-------------*/
 
 		// 获取待修改对象
@@ -213,7 +233,6 @@ public class UserController extends BaseController {
 		if (StringUtils.isEmpty(userInfo)) {
 			return returnLogic.resultErrorJsonString(206, "用户不存在。");
 		}
-
 		if (StringUtils.isEmpty(pwd)) {
 			return returnLogic.resultErrorJsonString(206, "原始密码不能为空。");
 		}
@@ -248,12 +267,6 @@ public class UserController extends BaseController {
 		if (StringUtils.isEmpty(telephone) || !telPass) {
 			return returnLogic.resultErrorJsonString(206, "请输入正确的手机号码。");
 		}
-//		HttpSession session = request.getSession();
-//		StringBuffer sessionId = new StringBuffer();
-//		sessionId.append(telephone);
-//		// 登录用户放入session
-//		session.setAttribute(sessionId.toString(), code);
-
 		//认证手机号是否存在
 		Users users=new Users();
 		users.setTelephone(telephone);
@@ -261,7 +274,6 @@ public class UserController extends BaseController {
 		if(StringUtils.isEmpty(u)){
 			return returnLogic.resultErrorJsonString(206, "用户不存在。");
 		}
-
 		SendSMSResult res=sendMassage.sendSMS(telephone);
 		return returnLogic.resultJsonString(200, "验证码已发送。",res.getMessageId());
 	}
@@ -324,15 +336,7 @@ public class UserController extends BaseController {
 //				if (!subject.isAuthenticated()) {
 //					return returnLogic.resultErrorJsonString(401, "请先登录！");
 //				}
-				String tk = httpServletRequest.getHeader("Authorization") == null ? ""
-						: httpServletRequest.getHeader("Authorization");
-				// 电话号码
-				String userName = JWTUtil.getUsername(tk);
-				Roles r = rolesService.findRoleForUser("administrator", "administrator", userName);
-				Boolean isAdmin = r == null ? true : false;
-				if(!StringUtils.isEmpty(user.getUser_name()) && user.getUser_name().equals("administrator")&& isAdmin) {
-					return returnLogic.resultErrorJsonString(206, "< "+user.getUser_name()+"> 是系统关键字，请重新输入！");
-				}
+				//更新或插入用户
 				Users userInfo = usersService.findById(user.getId());
 				userInfo.setHead_portrait(user.getHead_portrait());
 				userInfo.setUser_company(user.getUser_company());
@@ -353,7 +357,6 @@ public class UserController extends BaseController {
 				if (StringUtils.isEmpty(telephone) || !telPass) {
 					return returnLogic.resultErrorJsonString(206, "请输入正确的手机号码。");
 				}
-
 				// 用户注册不需要鉴权
 				ModelMapper modelMapper = new ModelMapper();
 				// 映射dto属性到java对象
@@ -369,28 +372,21 @@ public class UserController extends BaseController {
 				if (userExit != null) {
 					return returnLogic.resultErrorJsonString(206, "该手机号已经注册!");
 				}
-//				// 获取用户输入的验证码
-//				String regId=user.getMsgId();
-//				String code = user.getCheckCode();
-//				if (StringUtils.isEmpty(code)) {
-//					return returnLogic.resultErrorJsonString(206, "请输入验证码!");
-//				}
-//				//验证码验证
-//				KetSecret ks=new KetSecret();
-//				SMSClient client = new SMSClient(ks.getMASTER_SECRET(), ks.getAPP_KEY());
-//					try{
-//					//发送验证码，注意一点。这个假如验证码错误就直接报错了
-//					ValidSMSResult res = client.sendValidSMSCode(regId ,code);
-//					//return returnLogic.resultErrorJsonString(200, "验证码正确!");
-//				} catch (Exception e) {
-//					return returnLogic.resultErrorJsonString(500, "请输入正确的验证码!");
-//				}
-
 				// 用户名默认为手机号码
-				//pojo.setUserAccount(user.getUserAccount());
+				String token = JWTUtil.sign(user.getTelephone(), user.getPwd(), -1);
+
+				pojo.setUserAccount(user.getUserAccount());
+				pojo.setHead_portrait(user.getHead_portrait());
+				pojo.setUser_sex(user.getUser_sex());
 				pojo.setTelephone(user.getTelephone());
 				pojo.setPwd(pwd);
+				pojo.setUser_address(user.getUser_address());
+				pojo.setUser_company(user.getUser_company());
+				pojo.setUser_department(user.getUser_department());
+				pojo.setUser_email(user.getUser_email());
 				pojo.setCreateTime(new Date());
+				pojo.setType("0");
+				pojo.setUser_token(token);
 				// 保存用户
 				usersService.save(pojo);
 				return returnLogic.resultJson(200, "添加账号成功 !");
@@ -409,7 +405,6 @@ public class UserController extends BaseController {
 
 	@DeleteMapping("/deleteUser")
 	public String deleteUser(int id) {
-
 		/*-------------登录验证----<Begin>-------------*/
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
@@ -419,8 +414,16 @@ public class UserController extends BaseController {
 		/*-------------登录验证----<End>-------------*/
 
 		Users userInfo = usersService.findById(id);
+		//删除用户信息
 		if (userInfo != null) {
 			usersService.delete(new Integer[] { id });
+		}
+		//删除用户设备绑定信息
+		DeviceAndUser deviceAndUser=new DeviceAndUser();
+		deviceAndUser.setDeviceNum(id);
+		deviceAndUser=deviceAndUserService.find(deviceAndUser);
+		if(!StringUtils.isEmpty(deviceAndUser)){
+			deviceAndUserService.delete(new Integer[] { deviceAndUser.getId() });
 		}
 		return returnLogic.resultJson(200, "删除成功 !");
 	}
@@ -489,11 +492,51 @@ public class UserController extends BaseController {
 	public String userPropor() {
 		// 首先，检测用户登录状态；
 		Subject subject = SecurityUtils.getSubject();
-		if (!subject.isAuthenticated()) {
-			return returnLogic.resultErrorJsonString(401, "请先登录！");
-		}
+//		if (!subject.isAuthenticated()) {
+//			return returnLogic.resultErrorJsonString(401, "请先登录！");
+//		}
+
 		List<ProporVO> userProporList = usersService.userProporList();
 		return returnLogic.resultJsonString(200, "查询成功", userProporList);
 	}
+
+
+
+	/**
+	 * 初始化数据展示
+	 *
+	 * */
+	@GetMapping("init")
+	public Map init() {
+		String tk = httpServletRequest.getHeader("Authorization") == null ? ""
+				: httpServletRequest.getHeader("Authorization");
+		//手机号
+		String telephone = JWTUtil.getUsername(tk);
+		Users searchUser = new Users();
+		searchUser.setTelephone(telephone);
+		Users userExtis = usersService.find(searchUser);
+		String type=userExtis.getType();
+		String phone=null;
+		if("0".equals(type)){
+			phone=userExtis.getTelephone();
+		}
+		Map<String, Object> resMap = new HashMap<String, Object>();
+		//用户类型统计
+		List<ProporVO> proporCountList=usersService.userProporList();
+		//设备总在线离线故障数量
+		List<DeviceCountVo> deviceCountList = exportMapper.export_deviceCount(phone);
+		//首页展示用户下所有事件前20条
+		List<EventVO> eventList = devicesService.findEventListCut(phone);
+		//事件类型统计
+		List<ProporVO> eventProporList = devicesService.eventProporList(phone);
+		resMap.put("proporCountList", proporCountList);
+		resMap.put("deviceCountList", deviceCountList);
+		resMap.put("eventList", eventList);
+		resMap.put("eventProporList", eventProporList);
+		//发送sse首页展示数据
+		MQTTService.SendLogin(phone);
+		return resMap;
+	}
+
 
 }
